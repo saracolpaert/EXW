@@ -11,8 +11,10 @@ const Colors = {
 // VARIABLEN
 let renderer, scene, camera, HEIGHT, WIDTH, aspectRatio, fieldOfView, nearPlane, farPlane, container;
 let hemisphereLight, shadowLight;
-let airplane;
-let geomRightWing;
+let fly;
+
+let factor = 1;
+
 
 const createScene = () => {
 
@@ -82,7 +84,7 @@ const createLights = () => {
   scene.add(shadowLight);
 };
 
-class AirPlane {
+class Fly {
   constructor() {
     this.mesh = new THREE.Object3D();
     // this.mesh.rotation.x += 1;
@@ -115,23 +117,48 @@ class AirPlane {
     this.mesh.add(rightEye);
 
     // Create the left Wing
-    const geomLeftWing = new THREE.BoxGeometry(180, 20, 240, 1, 1, 1);
+    const geomLeftWing = new THREE.BoxGeometry(200, 20, 240, 1, 1, 1);
+    geomLeftWing.applyMatrix(new THREE.Matrix4().makeTranslation(0, 20, - 160));
+
     const matLeftWing = new THREE.MeshPhongMaterial({color: Colors.white});
     const leftWing = new THREE.Mesh(geomLeftWing, matLeftWing);
-    leftWing.position.set(- 100, 120, - 20);
-    leftWing.rotation.x += Math.PI / 16;
-    leftWing.rotation.z += Math.PI / - 16;
+    leftWing.position.set(- 95, 60, 75);
+
+    geomLeftWing.vertices[1].x -= 50;
+    geomLeftWing.vertices[3].x -= 50;
+
+    geomLeftWing.vertices[5].x += 110;
+    geomLeftWing.vertices[7].x += 110;
+    geomLeftWing.vertices[5].z += 40;
+    geomLeftWing.vertices[7].z += 40;
+
+
+    geomLeftWing.vertices[4].x -= 30;
+    geomLeftWing.vertices[6].x -= 30;
+
     leftWing.castShadow = true;
     leftWing.receiveShadow = true;
     this.mesh.add(leftWing);
 
     // Create the right Wing
-    geomRightWing = new THREE.BoxGeometry(180, 20, 240, 1, 1, 1);
+    const geomRightWing = new THREE.BoxGeometry(200, 20, 240, 1, 1, 1);
+    geomRightWing.applyMatrix(new THREE.Matrix4().makeTranslation(0, 20, - 160));
+
     const matRightWing = new THREE.MeshPhongMaterial({color: Colors.white});
     const rightWing = new THREE.Mesh(geomRightWing, matRightWing);
-    rightWing.position.set(100, 120, - 20);
-    rightWing.rotation.x += Math.PI / 16;
-    rightWing.rotation.z += Math.PI / 16;
+    rightWing.position.set(95, 60, 75);
+
+    geomRightWing.vertices[0].x -= 110;
+    geomRightWing.vertices[2].x -= 110;
+    geomRightWing.vertices[0].z += 40;
+    geomRightWing.vertices[2].z += 40;
+
+    geomRightWing.vertices[4].x += 50;
+    geomRightWing.vertices[6].x += 50;
+
+    geomRightWing.vertices[3].x += 30;
+    geomRightWing.vertices[1].x += 30;
+
     rightWing.castShadow = true;
     rightWing.receiveShadow = true;
     this.mesh.add(rightWing);
@@ -203,42 +230,81 @@ class AirPlane {
     this.mesh.add(rightLegThree);
 
 
-    // this.mesh.rotation.x += Math.PI / 2;
+    // this.mesh.rotation.y += Math.PI / 4;
     // this.mesh.rotation.x += Math.PI / 16;
 
   }
 }
 
-const createPlane = () => {
-  airplane = new AirPlane();
-  airplane.mesh.scale.set(.25, .25, .25);
-  airplane.mesh.position.y = 100;
-  scene.add(airplane.mesh);
+const createFly = () => {
+  fly = new Fly();
+  fly.mesh.scale.set(.05, .05, .05);
+  fly.mesh.position.y = 100;
+  fly.mesh.rotation.y = Math.PI / 2;
+  scene.add(fly.mesh);
 };
 
 let mousePos = {x: 0, y: 0};
 
+const updateFly = () => {
+  const targetX = normalize(mousePos.x, - 1, 1, - 100, 100);
+  const targetY = normalize(mousePos.y, - 1, 1, 25, 175);
+
+	// update the airplane's position
+  fly.mesh.position.y = targetY;
+  fly.mesh.position.x = targetX;
+  // fly.propeller.rotation.x += 0.3;
+};
+
+const normalize = (v, vmin, vmax, tmin, tmax) => {
+
+  const nv = Math.max(Math.min(v, vmax), vmin);
+  const dv = vmax - vmin;
+  const pc = (nv - vmin) / dv;
+  const dt = tmax - tmin;
+  const tv = tmin + (pc * dt);
+  return tv;
+
+};
+
 const loop = () => {
-	// Rotate the propeller, the sea and the sky
+
+
+  const leftWing = fly.mesh.children[3];
+  const rightWing = fly.mesh.children[4];
+
+  if (factor === 1) {
+    if (leftWing.rotation.x > Math.PI / 4) {
+      factor = - 1;
+    }
+  }
+
+  if (factor === - 1) {
+    if (leftWing.rotation.x < 0.1) {
+      factor = 1;
+    }
+  }
+
+  leftWing.rotation.x += 0.06 * factor;
+  leftWing.rotation.y += 0.01 * factor;
+  rightWing.rotation.x += 0.06 * factor;
+  rightWing.rotation.y -= 0.01 * factor;
+
+  // rightWing.rotation.y += 0.01 * factor;
+
+  updateFly();
+
+  // fly.mesh.rotation.x = - mousePos.y;
+  // fly.mesh.rotation.y = mousePos.x;
+
   renderer.render(scene, camera);
-	// call the loop function again
-  airplane.mesh.rotation.x = mousePos.y;
-  airplane.mesh.rotation.y = mousePos.x;
 
   requestAnimationFrame(loop);
 };
 
 const  handleMouseMove = e => {
 
-	// here we are converting the mouse position value received
-	// to a normalized value varying between -1 and 1;
-	// this is the formula for the horizontal axis:
-
   const tx = - 1 + (e.clientX / WIDTH) * 2;
-
-	// for the vertical axis, we need to inverse the formula
-	// because the 2D y-axis goes the opposite direction of the 3D y-axis
-
   const ty = 1 - (e.clientY / HEIGHT) * 2;
   mousePos = {x: tx, y: ty};
 };
@@ -247,13 +313,9 @@ const init = () => {
 
   createScene();
   createLights();
-  createPlane();
+  createFly();
   document.addEventListener(`mousemove`, handleMouseMove, false);
-
   loop();
-
-  // renderer.render(scene, camera);
-
 };
 
 init();
