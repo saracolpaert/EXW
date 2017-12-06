@@ -229,10 +229,6 @@ class Fly {
     rightLegThree.receiveShadow = true;
     this.mesh.add(rightLegThree);
 
-
-    // this.mesh.rotation.y += Math.PI / 4;
-    // this.mesh.rotation.x += Math.PI / 16;
-
   }
 }
 
@@ -241,6 +237,8 @@ const createFly = () => {
   fly.mesh.scale.set(.05, .05, .05);
   fly.mesh.position.y = 100;
   fly.mesh.rotation.y = Math.PI / 2;
+  // fly.mesh.rotation.x = Math.PI / 2;
+
   scene.add(fly.mesh);
 };
 
@@ -250,10 +248,8 @@ const updateFly = () => {
   const targetX = normalize(mousePos.x, - 1, 1, - 100, 100);
   const targetY = normalize(mousePos.y, - 1, 1, 25, 175);
 
-	// update the airplane's position
   fly.mesh.position.y = targetY;
   fly.mesh.position.x = targetX;
-  // fly.propeller.rotation.x += 0.3;
 };
 
 const normalize = (v, vmin, vmax, tmin, tmax) => {
@@ -293,13 +289,24 @@ const loop = () => {
   // rightWing.rotation.y += 0.01 * factor;
 
   updateFly();
-
   // fly.mesh.rotation.x = - mousePos.y;
   // fly.mesh.rotation.y = mousePos.x;
 
   renderer.render(scene, camera);
 
   requestAnimationFrame(loop);
+};
+
+let counter = 61;
+
+const updateCounter = () => {
+  console.log(`blob`);
+  if (counter > 0) {
+    counter --;
+    document.getElementById(`counter`).innerHTML = counter;
+  } else if (counter === 0) {
+    document.getElementById(`counter`).innerHTML = `end game`;
+  }
 };
 
 const  handleMouseMove = e => {
@@ -309,13 +316,17 @@ const  handleMouseMove = e => {
   mousePos = {x: tx, y: ty};
 };
 
+
 const init = () => {
 
   createScene();
   createLights();
   createFly();
   document.addEventListener(`mousemove`, handleMouseMove, false);
+  setInterval(updateCounter, 1000);
+
   loop();
+
 };
 
 init();
