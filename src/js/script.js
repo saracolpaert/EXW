@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import * as Tone from 'tone';
+
 import Fly from './objects/Fly';
 import Apple from './objects/Apple';
 import Banana from './objects/Banana';
@@ -446,7 +448,6 @@ const addApple = (inPath, row, isLeft) => {
     sphericalHelperApples.set(worldRadius - 0.3, appleAreaAngle, row);
   }
   newApple.mesh.position.setFromSpherical(sphericalHelperApples);
-
   const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
   const appleVector = newApple.mesh.position.clone().normalize();
   newApple.mesh.quaternion.setFromUnitVectors(appleVector, rollingGroundVector);
@@ -475,7 +476,6 @@ const addBanana = (inPath, row, isLeft) => {
     sphericalHelperBananas.set(worldRadius - 0.3, bananaAreaAngle, row);
   }
   newBanana.mesh.position.setFromSpherical(sphericalHelperBananas);
-
   const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
   const bananaVector = newBanana.mesh.position.clone().normalize();
   newBanana.mesh.quaternion.setFromUnitVectors(bananaVector, rollingGroundVector);
@@ -564,7 +564,6 @@ const doTreeLogic = () => {
     treesInPath.splice(fromWhere, 1);
     treesPool.push(oneTree);
     oneTree.visible = false;
-    console.log(`remove tree`);
   });
 };
 
@@ -578,12 +577,27 @@ const doAppleLogic = () => {
     if (applePos.z > 6 && oneApple.visible) {
       applesToRemove.push(oneApple);
     } else {
-      if (applePos.distanceTo(fly.mesh.position) <= 0) {
+      if (applePos.distanceTo(fly.mesh.position) <= .8) {
         console.log(`hit`);
+        const distortion = new Tone.Distortion(1 + applePos.x / 4);
+        const polySynth = new Tone.PolySynth(4, Tone.Synth).chain(distortion, Tone.Master);
+        polySynth.triggerAttackRelease(`C4`, `8n`);
         hasCollided = true;
       }
     }
   });
+
+  // applesPool.forEach((element, index) => {
+  //   const oneApple = applesInPath [index];
+  //   const applePos = oneApple.mesh.position;
+  //   console.log(applePos.distanceTo(fly.mesh.position));
+  //   if (applePos.distanceTo(fly.mesh.position) <= 1.5) {
+  //     // const distortion = new Tone.Distortion(1 + applePos.x / 4);
+  //     // const polySynth = new Tone.PolySynth(4, Tone.Synth).chain(distortion, Tone.Master);
+  //     // polySynth.triggerAttackRelease(`C4`, `8n`);
+  //     console.log(`hit apple`);
+  //   }
+  // });
 
   let fromWhere;
   applesToRemove.forEach(function (element, index) {
@@ -592,7 +606,6 @@ const doAppleLogic = () => {
     applesInPath.splice(fromWhere, 1);
     applesPool.push(oneApple);
     oneApple.visible = false;
-    console.log(`remove apple`);
   });
 };
 
@@ -620,7 +633,6 @@ const doBananaLogic = () => {
     bananasInPath.splice(fromWhere, 1);
     bananasPool.push(oneBanana);
     oneBanana.visible = false;
-    console.log(`remove banana`);
   });
 };
 
@@ -648,7 +660,6 @@ const doOrangeLogic = () => {
     orangesInPath.splice(fromWhere, 1);
     orangesPool.push(oneOrange);
     oneOrange.visible = false;
-    console.log(`remove orange`);
   });
 };
 
@@ -676,7 +687,6 @@ const doGrapesLogic = () => {
     grapesInPath.splice(fromWhere, 1);
     grapesPool.push(oneGrapes);
     oneGrapes.visible = false;
-    console.log(`remove grapes`);
   });
 };
 
