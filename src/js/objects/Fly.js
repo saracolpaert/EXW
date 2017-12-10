@@ -14,7 +14,7 @@ export default class Fly {
       // Create the body
     const geomBody = new THREE.BoxGeometry(20, 17, 27, 1, 1, 1);
 
-    const matBody = new THREE.MeshPhongMaterial({color: Colors.blue, flatShading: THREE.FlatShading});
+    const matBody = new THREE.MeshPhongMaterial({color: Colors.blue, flatShading: true});
     const body = new THREE.Mesh(geomBody, matBody);
     body.castShadow = true;
     body.receiveShadow = true;
@@ -22,7 +22,7 @@ export default class Fly {
 
       // Create the left Eye
     const geomLeftEye = new THREE.BoxGeometry(7.5, 15, 4, 1, 1, 1);
-    const matLeftEye = new THREE.MeshPhongMaterial({color: Colors.blueDark, flatShading: THREE.FlatShading});
+    const matLeftEye = new THREE.MeshPhongMaterial({color: Colors.blueDark, flatShading: true});
     const leftEye = new THREE.Mesh(geomLeftEye, matLeftEye);
     leftEye.position.set(4.5, 0, 15);
     leftEye.castShadow = true;
@@ -31,7 +31,7 @@ export default class Fly {
 
     // Create the left Eye
     const geomRightEye = new THREE.BoxGeometry(7.5, 15, 4, 1, 1, 1);
-    const matRightEye = new THREE.MeshPhongMaterial({color: Colors.blueDark, flatShading: THREE.FlatShading});
+    const matRightEye = new THREE.MeshPhongMaterial({color: Colors.blueDark, flatShading: true});
     const rightEye = new THREE.Mesh(geomRightEye, matRightEye);
     rightEye.position.set(- 4.5, 0, 15);
     rightEye.castShadow = true;
@@ -42,7 +42,7 @@ export default class Fly {
     const geomLeftWing = new THREE.BoxGeometry(20, 2, 24, 1, 1, 1);
     geomLeftWing.applyMatrix(new THREE.Matrix4().makeTranslation(0, 2, - 16));
 
-    const matLeftWing = new THREE.MeshPhongMaterial({color: Colors.white, flatShading: THREE.FlatShading});
+    const matLeftWing = new THREE.MeshPhongMaterial({color: Colors.white, flatShading: true});
     const leftWing = new THREE.Mesh(geomLeftWing, matLeftWing);
     leftWing.position.set(- 9.5, 6, 7.5);
 
@@ -66,7 +66,7 @@ export default class Fly {
     const geomRightWing = new THREE.BoxGeometry(20, 2, 24, 1, 1, 1);
     geomRightWing.applyMatrix(new THREE.Matrix4().makeTranslation(0, 2, - 16));
 
-    const matRightWing = new THREE.MeshPhongMaterial({color: Colors.white, flatShading: THREE.FlatShading});
+    const matRightWing = new THREE.MeshPhongMaterial({color: Colors.white, flatShading: true});
     const rightWing = new THREE.Mesh(geomRightWing, matRightWing);
     rightWing.position.set(9.5, 6, 7.5);
 
@@ -87,7 +87,7 @@ export default class Fly {
 
       // Create the LegOne
     const geomLeg = new THREE.BoxGeometry(20, 1, 3, 1, 1, 1);
-    const matLeg = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: THREE.FlatShading});
+    const matLeg = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: true});
     const leftLeg = new THREE.Mesh(geomLeg, matLeg);
     leftLeg.position.set(11, - 5, 8);
     leftLeg.rotation.z -= Math.PI / 3;
@@ -98,7 +98,7 @@ export default class Fly {
 
       // Create the LegTwo
     const geomLegTwo = new THREE.BoxGeometry(20, 1, 3, 1, 1, 1);
-    const matLegTwo = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: THREE.FlatShading});
+    const matLegTwo = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: true});
     const leftLegTwo = new THREE.Mesh(geomLegTwo, matLegTwo);
     leftLegTwo.position.set(11, - 5, 6);
     leftLegTwo.rotation.z -= Math.PI / 3;
@@ -109,7 +109,7 @@ export default class Fly {
 
       // Create the LegThree
     const geomLegThree = new THREE.BoxGeometry(20, 1, 3, 1, 1, 1);
-    const matLegThree = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: THREE.FlatShading});
+    const matLegThree = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: true});
     const leftLegThree = new THREE.Mesh(geomLegThree, matLegThree);
     leftLegThree.position.set(11, - 4.5, 10);
     leftLegThree.rotation.z -= Math.PI / 3;
@@ -120,7 +120,7 @@ export default class Fly {
 
     // Create the RightLegOne
     const geomRightLeg = new THREE.BoxGeometry(20, 1, 3, 1, 1, 1);
-    const matRightLeg = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: THREE.FlatShading});
+    const matRightLeg = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: true});
     const rightLeg = new THREE.Mesh(geomRightLeg, matRightLeg);
     rightLeg.position.set(- 11, - 5, 8);
     rightLeg.rotation.z -= Math.PI / - 3;
@@ -131,7 +131,7 @@ export default class Fly {
 
     // Create the RightLegTwo
     const geomRightLegTwo = new THREE.BoxGeometry(20, 1, 3, 1, 1, 1);
-    const matRightLegTwo = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: THREE.FlatShading});
+    const matRightLegTwo = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: true});
     const rightLegTwo = new THREE.Mesh(geomRightLegTwo, matRightLegTwo);
     rightLegTwo.position.set(- 11, - 5, 6);
     rightLegTwo.rotation.z -= Math.PI / - 3;
@@ -142,7 +142,7 @@ export default class Fly {
 
       // Create the RightLegThree
     const geomRightLegThree = new THREE.BoxGeometry(20, 1, 3, 1, 1, 1);
-    const matRightLegThree = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: THREE.FlatShading});
+    const matRightLegThree = new THREE.MeshPhongMaterial({color: Colors.brownDark, flatShading: true});
     const rightLegThree = new THREE.Mesh(geomRightLegThree, matRightLegThree);
     rightLegThree.position.set(- 11, - 4.5, 10);
     rightLegThree.rotation.z -= Math.PI / - 3;

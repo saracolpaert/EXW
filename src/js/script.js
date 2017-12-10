@@ -1,95 +1,113 @@
 import * as THREE from 'three';
-
 import Fly from './objects/Fly';
 import Apple from './objects/Apple';
+import Banana from './objects/Banana';
+import Orange from './objects/Orange';
+import Grapes from './objects/Grapes';
 
-let sceneWidth, sceneHeight, camera, scene, renderer, dom;
-let sun, rollingGroundSphere;
-
-let game;
-//sneeuwbal
-let heroSphere, heroRollingSpeed;
-
-//snelheid van de grond die beweegt
-const rollingSpeed = 0.004;
-const heroRadius = 0.2;
-const heroBaseY = 1.8;
-let bounceValue = 0.1;
-
-const worldRadius = 26;
-
-let sphericalHelper, pathAngleValues;
-const gravity = 0.005;
-const middleLane = 0;
-let currentLane, clock;
-const treeReleaseInterval = 0.5;
-//const lastTreeReleaseTime = 0;
-let treesInpath, treesPool;
-
-let particleGeometry, particles;
-const particleCount = 20;
-let explosionPower = 1.06;
-
-// let hasCollided;
-
-let midPointVector, vertexVector, vertexIndex, offset;
-let currentTier = 1;
-let fly, apple;
-let applesInpath, applesPool;
-
+let sceneWidth, sceneHeight, scene, camera, renderer, dom, sun, game, startInterval;
+//vlieg
+let fly;
 let mousePos = {x: 0, y: 0};
-
 let factor = 1;
 
-let startInterval;
+//wereld
+let currentTier = 1;
+const worldRadius = 26;
+let rollingGroundSphere;
+const rollingSpeed = 0.003;
+
+//bomen
+let treesPool, treesInPath;
+const releaseInterval = 2;
+let sphericalHelper, pathAngleValues;
+let vertexIndex, vertexVector, midPointVector, offset;
+
+//appels
+let applesPool, applesInPath;
+let sphericalHelperApples, applePathAngleValues;
+
+//bananas
+let bananasPool, bananasInPath;
+let sphericalHelperBananas, bananasPathAngleValues;
+
+//oranges
+let orangesPool, orangesInPath;
+let sphericalHelperOranges, orangesPathAngleValues;
+
+//grapes
+let grapesPool, grapesInPath;
+let sphericalHelperGrapes, grapesPathAngleValues;
+
+let clock;
+
+let hasCollided;
 
 const reset = () => {
   game = {
     counter: 6
   };
-
   clearInterval(startInterval);
 };
 
+
 const createScene = () => {
 
-  //collision standaard op false
-  // hasCollided = false;
+  hasCollided = false;
 
   //bomen
-  treesInpath = [];
+  treesInPath = [];
   treesPool = [];
+  sphericalHelper = new THREE.Spherical();
+  //angle values for each path on the sphere
+  pathAngleValues = [1.52, 1.57, 1.62];
 
   //appels
+  applesInPath = [];
   applesPool = [];
-  applesInpath = [];
+  sphericalHelperApples = new THREE.Spherical();
+  applePathAngleValues = [1.52, 1.57, 1.62];
 
+  //bananas
+  bananasInPath = [];
+  bananasPool = [];
+  sphericalHelperBananas = new THREE.Spherical();
+  bananasPathAngleValues = [1.52, 1.57, 1.62];
+
+  //oranges
+  orangesInPath = [];
+  orangesPool = [];
+  sphericalHelperOranges = new THREE.Spherical();
+  orangesPathAngleValues = [1.52, 1.57, 1.62];
+
+  //grapes
+  grapesInPath = [];
+  grapesPool = [];
+  sphericalHelperGrapes = new THREE.Spherical();
+  grapesPathAngleValues = [1.52, 1.57, 1.62];
 
   //clock starten
   clock = new THREE.Clock();
   clock.start();
-
-  //rollen van de sneeuwbal
-  heroRollingSpeed = (rollingSpeed * worldRadius / heroRadius) / 5;
-  sphericalHelper = new THREE.Spherical();
-  pathAngleValues = [1.52, 1.57, 1.62];
 
   sceneWidth = window.innerWidth;
   sceneHeight = window.innerHeight;
 
   //scene aanmaken
   scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0xf0fff0, 0.14);
+  scene.fog = new THREE.Fog(0xf0ff0, 0.14);
 
   //camera aanmaken
-  camera = new THREE.PerspectiveCamera(60, sceneWidth / sceneHeight, 1, 1000);
+  camera = new THREE.PerspectiveCamera(40, sceneWidth / sceneHeight, 1, 1000);
+  camera.position.z = 6.5;
+  camera.position.y = 2.5;
 
   //renderer
   renderer = new THREE.WebGLRenderer({
     alpha: true,
     antialias: true
   });
-  renderer.setClearColor(0xfffafa, 1);
+  renderer.setClearColor(0xD2E6F7, 1);
 
   //schaduw
   renderer.shadowMap.enabled = true;
@@ -100,74 +118,30 @@ const createScene = () => {
   dom = document.getElementById(`world`);
   dom.appendChild(renderer.domElement);
 
-  createTreesPool();
-  addWorld();
-  addHero();
-  addLight();
-  addExplosion();
-
-  //camera position
-  camera.position.z = 6.5;
-  camera.position.y = 2.5;
-
   //resize callback
   window.addEventListener(`resize`, onWindowResize, false);
-};
 
-const addExplosion = () => {
-  particleGeometry = new THREE.Geometry();
-  for (let i = 0;i < particleCount;i ++) {
-    const vertex = new THREE.Vector3();
-    particleGeometry.vertices.push(vertex);
-  }
+  createTreesPool();
+  createApplesPool();
+  createBananasPool();
+  createOrangesPool();
+  createGrapesPool();
+  addWorld();
+  addLight();
 
-  const particleMaterial = new THREE.PointsMaterial({
-    color: 0xfffafa, size: 0.2
-  });
-  particles = new THREE.Points(particleGeometry, particleMaterial);
-  scene.add(particles);
-  particles.visible = false;
-};
-
-const createTreesPool = () => {
-  const maxTreesInPool = 10;
-  let newTree;
-  for (let i = 0;i < maxTreesInPool;i ++) {
-    newTree = createTree();
-    treesPool.push(newTree);
-  }
-};
-
-const createApplesPool = () => {
-  const maxApplesInPool = 10;
-  let newApple;
-  for (let i = 0;i < maxApplesInPool;i ++) {
-    newApple = createApple();
-    applesPool.push(newApple);
-  }
-};
-
-const addHero = () => {
-  const sphereGeometry = new THREE.DodecahedronGeometry(heroRadius, 1);
-  const sphereMaterial = new THREE.MeshStandardMaterial({color: 0xe5f2f2, flatShading: THREE.FlatShading});
-  heroSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-  heroSphere.receiveShadow = true;
-  heroSphere.castShadow = true;
-
-  scene.add(heroSphere);
-
-  heroSphere.position.y = heroBaseY;
-  heroSphere.position.z = 4.8;
-  currentLane = middleLane;
-  heroSphere.position.x = currentLane;
 };
 
 const addWorld = () => {
-  const sides = 40;
-  const tiers = 40;
-  const sphereGeometry = new THREE.SphereGeometry(worldRadius, sides, tiers);
-  const sphereMaterial = new THREE.MeshStandardMaterial({color: 0x70592E, flatShading: THREE.FlatShading});
 
+  //aantal zijden wereld
+  const sides = 40; //200
+  const tiers = 40; //150
+
+  //spehere en material
+  const sphereGeometry = new THREE.SphereGeometry(worldRadius, sides, tiers);
+  const sphereMaterial = new THREE.MeshStandardMaterial({color: 0xBFBAB0, flatShading: true});
+
+  //vormen opbouwen wereld
   let vertexIndex;
   let vertexVector = new THREE.Vector3();
   let nextVertexVector = new THREE.Vector3();
@@ -177,7 +151,7 @@ const addWorld = () => {
   let heightValue;
   const maxHeight = 0.7;
 
-  for (let j = 1;j < tiers - 50;j ++) {
+  for (let j = 1;j < tiers - 50;j ++) { // - 20
     currentTier = j;
     for (let i = 0;i < sides;i ++) {
       vertexIndex = (currentTier * sides) + 1;
@@ -198,6 +172,8 @@ const addWorld = () => {
       sphereGeometry.vertices[i + vertexIndex] = (vertexVector.add(offset));
     }
   }
+
+  //mesh wereld aanmaken
   rollingGroundSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
   rollingGroundSphere.receiveShadow = true;
   rollingGroundSphere.castShadow = false;
@@ -205,106 +181,71 @@ const addWorld = () => {
   scene.add(rollingGroundSphere);
   rollingGroundSphere.position.y = - 24;
   rollingGroundSphere.position.z = 2;
+
+  //wereld bomen aanmaken
   addWorldTrees();
+  addWorldApples();
+  addWorldBananas();
+  addWorldOranges();
+  addWorldGrapes();
 };
 
 const addLight = () => {
-  const hemisphereLight = new THREE.HemisphereLight(0xfffafa, 0x000000, .9);
+
+  //licht toevoegen
+  const hemisphereLight = new THREE.HemisphereLight(0x907465, 0x000000, 3);
   scene.add(hemisphereLight);
-  sun = new THREE.DirectionalLight(0xcdc1c5, 0.9);
-  sun.position.set(12, 6, - 7);
-  sun.castShadow = true;
+
+  // zon toevoegen
+  sun = new THREE.DirectionalLight(0xDBC0A9, 0.1);
+  sun.position.set(0, 8, - 10);
   scene.add(sun);
-//Set up shadow properties for the sun light
-  sun.shadow.mapSize.width = 256;
-  sun.shadow.mapSize.height = 256;
-  sun.shadow.camera.near = 0.5;
-  sun.shadow.camera.far = 50;
 };
 
-const addPathTree = () => {
-  const options = [0, 1, 2];
-  let lane = Math.floor(Math.random() * 3);
-  addTree(true, lane);
-  options.splice(lane, 1);
-  if (Math.random() > 0.5) {
-    lane = Math.floor(Math.random() * 2);
-    addTree(true, options[lane]);
-  }
-};
-
-const addPathApple = () => {
-  const options = [0, 1, 2];
-  let lane = Math.floor(Math.random() * 3);
-  addApple(true, lane);
-  options.splice(lane, 1);
-  if (Math.random() > 0.5) {
-    lane = Math.floor(Math.random() * 2);
-    addApple(true, options[lane]);
-  }
-};
-
-const addWorldTrees = () => {
-  const numTrees = 36;
-  const gap = 6.28 / 36;
-  for (let i = 0;i < numTrees;i ++) {
-    addTree(false, i * gap, true);
-    addTree(false, i * gap, false);
-  }
-};
-
-const addTree = (inPath, row, isLeft) => {
+//to plant trees on the path, we will make use of a pool of trees which are created on start
+const createTreesPool = () => {
+  const maxTreesInPool = 10;
   let newTree;
-  if (inPath) {
-    if (treesPool.length === 0) return;
-    newTree = treesPool.pop();
-    newTree.visible = true;
-    treesInpath.push(newTree);
-    sphericalHelper.set(worldRadius - 0.3, pathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
-  } else {
+  for (let i = 0;i < maxTreesInPool;i ++) {
     newTree = createTree();
-    let forestAreaAngle = 0;//[1.52,1.57,1.62];
-    if (isLeft) {
-      forestAreaAngle = 1.68 + Math.random() * 0.1;
-    } else {
-      forestAreaAngle = 1.46 - Math.random() * 0.1;
-    }
-    sphericalHelper.set(worldRadius - 0.3, forestAreaAngle, row);
+    treesPool.push(newTree);
   }
-  newTree.position.setFromSpherical(sphericalHelper);
-  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
-  const treeVector = newTree.position.clone().normalize();
-  newTree.quaternion.setFromUnitVectors(treeVector, rollingGroundVector);
-  newTree.rotation.x += (Math.random() * (2 * Math.PI / 10)) + - Math.PI / 10;
-
-  rollingGroundSphere.add(newTree);
 };
 
-const addApple = (inPath, row, isLeft) => {
+const createApplesPool = () => {
+  const maxApplesInPool = 10;
   let newApple;
-  if (inPath) {
-    if (applesPool.length === 0) return;
-    newApple = applesPool.pop();
-    newApple.mesh.visible = true;
-    applesInpath.push(newApple.mesh);
-    sphericalHelper.set(worldRadius - 0.3, pathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
-  } else {
+  for (let i = 0;i < maxApplesInPool;i ++) {
     newApple = createApple();
-    let forestAreaAngle = 0;//[1.52,1.57,1.62];
-    if (isLeft) {
-      forestAreaAngle = 1.68 + Math.random() * 0.1;
-    } else {
-      forestAreaAngle = 1.46 - Math.random() * 0.1;
-    }
-    sphericalHelper.set(worldRadius - 0.3, forestAreaAngle, row);
+    applesPool.push(newApple);
   }
-  newApple.mesh.position.setFromSpherical(sphericalHelper);
-  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
-  const appleVector = newApple.mesh.position.clone().normalize();
-  newApple.mesh.quaternion.setFromUnitVectors(appleVector, rollingGroundVector);
-  newApple.mesh.rotation.x += (Math.random() * (2 * Math.PI / 10)) + - Math.PI / 10;
+};
 
-  rollingGroundSphere.add(newApple.mesh);
+const createBananasPool = () => {
+  const maxBananasInPool = 10;
+  let newBanana;
+  for (let i = 0;i < maxBananasInPool;i ++) {
+    newBanana = createBanana();
+    bananasPool.push(newBanana);
+  }
+};
+
+const createOrangesPool = () => {
+  const maxOrangesInPool = 10;
+  let newOrange;
+  for (let i = 0;i < maxOrangesInPool;i ++) {
+    newOrange = createOrange();
+    orangesPool.push(newOrange);
+  }
+};
+
+const createGrapesPool = () => {
+  const maxGrapesInPool = 10;
+  let newGrapes;
+  for (let i = 0;i < maxGrapesInPool;i ++) {
+    newGrapes = createGrapes();
+    grapesPool.push(newGrapes);
+  }
 };
 
 const createTree = () => {
@@ -314,7 +255,7 @@ const createTree = () => {
   midPointVector = new THREE.Vector3();
   vertexVector = new THREE.Vector3();
   const treeGeometry = new THREE.ConeGeometry(0.5, 1, sides, tiers);
-  const treeMaterial = new THREE.MeshStandardMaterial({color: 0x33ff33, flatShading: THREE.FlatShading});
+  const treeMaterial = new THREE.MeshStandardMaterial({color: 0x33ff33, flatShading: true});
   midPointVector = treeGeometry.vertices[0].clone();
   blowUpTree(treeGeometry.vertices, sides, 0, scalarMultiplier);
   tightenTree(treeGeometry.vertices, sides, 1);
@@ -328,7 +269,7 @@ const createTree = () => {
   treeTop.position.y = 0.9;
   treeTop.rotation.y = (Math.random() * (Math.PI));
   const treeTrunkGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.5);
-  const trunkMaterial = new THREE.MeshStandardMaterial({color: 0x886633, flatShading: THREE.FlatShading});
+  const trunkMaterial = new THREE.MeshStandardMaterial({color: 0x886633, flatShading: true});
   const treeTrunk = new THREE.Mesh(treeTrunkGeometry, trunkMaterial);
   treeTrunk.position.y = 0.25;
   const tree = new THREE.Object3D();
@@ -337,15 +278,7 @@ const createTree = () => {
   return tree;
 };
 
-const createApple = () => {
-  apple = new Apple();
-  apple.mesh.scale.set(0.005, 0.005, 0.005);
-  apple.mesh.position.x = - 1.9 + (Math.random() * 4);
-  apple.mesh.position.y = 1.9 + (Math.random() * 2);
-  scene.add(apple.mesh);
-  return apple;
-};
-
+//used to expand the alternative ring of vertices outwards
 const blowUpTree = (vertices, sides, currentTier, scalarMultiplier, odd) => {
   vertexVector = new THREE.Vector3();
   midPointVector = vertices[0].clone();
@@ -376,6 +309,7 @@ const blowUpTree = (vertices, sides, currentTier, scalarMultiplier, odd) => {
   }
 };
 
+//used to shrink down the next ring of vertices
 const tightenTree = (vertices, sides, currentTier) => {
   let vertexIndex;
   let vertexVector = new THREE.Vector3();
@@ -391,24 +325,417 @@ const tightenTree = (vertices, sides, currentTier) => {
   }
 };
 
-const createFly = () => {
-  fly = new Fly();
-  fly.mesh.scale.set(0.005, 0.005, 0.005);
-
-  fly.mesh.position.y = heroBaseY;
-  fly.mesh.position.z = 4.8;
-  fly.mesh.rotation.y = Math.PI;
-  fly.mesh.rotation.x = Math.PI / 6;
-  scene.add(fly.mesh);
+const createApple = () => {
+  const apple = new Apple();
+  apple.mesh.scale.set(0.02, 0.02, 0.02);
+  return apple;
 };
 
-const updateFly = () => {
-  fly.mesh.position.y = mousePos.y + 2.4;
-  fly.mesh.position.x = mousePos.x + .1;
-  if (fly.mesh.position.y <= 1.8) {
-    fly.mesh.position.y = 1.9;
+const createBanana = () => {
+  const banana = new Banana();
+  banana.mesh.scale.set(0.02, 0.02, 0.02);
+  return banana;
+};
+
+const createOrange = () => {
+  const orange = new Orange();
+  orange.mesh.scale.set(0.03, 0.03, 0.03);
+  return orange;
+};
+
+const createGrapes = () => {
+  const grapes = new Grapes();
+  grapes.mesh.scale.set(0.02, 0.02, 0.02);
+  return grapes;
+};
+
+// one set of trees is placed outside the rolling track to create the world
+const addWorldTrees = () => {
+  const numTrees = 36;
+  const gap = 6.28 / 36;
+  for (let i = 0;i < numTrees;i ++) {
+    addTree(false, i * gap, true);
+    addTree(false, i * gap, false);
   }
 };
+
+const addWorldApples = () => {
+  const numApples = 5;
+  const gap = 4 / 3;
+  for (let i = 0;i < numApples;i ++) {
+    addApple(false, i * gap, true);
+    addApple(false, i * gap, false);
+  }
+};
+
+const addWorldBananas = () => {
+  const numBananas = 5;
+  const gap = 4 / 3;
+  for (let i = 0;i < numBananas;i ++) {
+    addBanana(false, i * gap, true);
+    addBanana(false, i * gap, false);
+  }
+};
+
+const addWorldOranges = () => {
+  const numOranges = 5;
+  const gap = 4 / 3;
+  for (let i = 0;i < numOranges;i ++) {
+    addOrange(false, i * gap, true);
+    addOrange(false, i * gap, false);
+  }
+};
+
+const addWorldGrapes = () => {
+  const numGrapes = 5;
+  const gap = 4 / 3;
+  for (let i = 0;i < numGrapes;i ++) {
+    addGrapes(false, i * gap, true);
+    addGrapes(false, i * gap, false);
+  }
+};
+
+const addTree = (inPath, row, isLeft) => {
+  let newTree;
+  if (inPath) {
+    if (treesPool.length === 0) return;
+    newTree = treesPool.pop();
+    newTree.visible = true;
+    treesInPath.push(newTree);
+    sphericalHelper.set(worldRadius - 0.3, pathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
+  } else {
+    newTree = createTree();
+    let forestAreaAngle = 0;
+
+    if (isLeft) {
+      forestAreaAngle = 1.68 + Math.random() * 0.1;
+    } else {
+      forestAreaAngle = 1.46 - Math.random() * 0.1;
+    }
+    sphericalHelper.set(worldRadius - 0.3, forestAreaAngle, row);
+  }
+  newTree.position.setFromSpherical(sphericalHelper);
+
+  //all the trees are added as a child of the rollingGroundSphere so that they also move when we rotate the sphere.
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const treeVector = newTree.position.clone().normalize();
+  newTree.quaternion.setFromUnitVectors(treeVector, rollingGroundVector);
+  newTree.rotation.x += (Math.random() * (2 * Math.PI / 10)) + - Math.PI / 10;
+
+  rollingGroundSphere.add(newTree);
+
+};
+
+const addApple = (inPath, row, isLeft) => {
+  let newApple;
+  if (inPath) {
+    if (applesPool.length === 0) return;
+    newApple = applesPool.pop();
+    newApple.visible = true;
+    applesInPath.push(newApple);
+    sphericalHelperApples.set(worldRadius - 0.3, applePathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
+  } else {
+    newApple = createApple();
+    let appleAreaAngle = 0;
+
+    if (isLeft) {
+      appleAreaAngle = 1.68 + Math.random() * 0.1;
+    } else {
+      appleAreaAngle = 1.46 - Math.random() * 0.1;
+    }
+    sphericalHelperApples.set(worldRadius - 0.3, appleAreaAngle, row);
+  }
+  newApple.mesh.position.setFromSpherical(sphericalHelperApples);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const appleVector = newApple.mesh.position.clone().normalize();
+  newApple.mesh.quaternion.setFromUnitVectors(appleVector, rollingGroundVector);
+  newApple.mesh.rotation.x += (Math.random() * (2 * Math.PI / 10)) + - Math.PI / 10;
+  rollingGroundSphere.add(newApple.mesh);
+
+};
+
+const addBanana = (inPath, row, isLeft) => {
+  let newBanana;
+  if (inPath) {
+    if (applesPool.length === 0) return;
+    newBanana = bananasPool.pop();
+    newBanana.visible = true;
+    bananasInPath.push(newBanana);
+    sphericalHelperBananas.set(worldRadius - 0.3, bananasPathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
+  } else {
+    newBanana = createBanana();
+    let bananaAreaAngle = 0;
+
+    if (isLeft) {
+      bananaAreaAngle = 1.68 + Math.random() * 0.1;
+    } else {
+      bananaAreaAngle = 1.46 - Math.random() * 0.1;
+    }
+    sphericalHelperBananas.set(worldRadius - 0.3, bananaAreaAngle, row);
+  }
+  newBanana.mesh.position.setFromSpherical(sphericalHelperBananas);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const bananaVector = newBanana.mesh.position.clone().normalize();
+  newBanana.mesh.quaternion.setFromUnitVectors(bananaVector, rollingGroundVector);
+  newBanana.mesh.rotation.x += (Math.random() * (2 * Math.PI / 10)) + - Math.PI / 10;
+  rollingGroundSphere.add(newBanana.mesh);
+};
+
+const addOrange = (inPath, row, isLeft) => {
+  let newOrange;
+  if (inPath) {
+    if (orangesPool.length === 0) return;
+    newOrange = orangesPool.pop();
+    newOrange.visible = true;
+    orangesInPath.push(newOrange);
+    sphericalHelperOranges.set(worldRadius - 0.3, orangesPathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
+  } else {
+    newOrange = createOrange();
+    let orangeAreaAngle = 0;
+
+    if (isLeft) {
+      orangeAreaAngle = 1.68 + Math.random() * 0.1;
+    } else {
+      orangeAreaAngle = 1.46 - Math.random() * 0.1;
+    }
+    sphericalHelperOranges.set(worldRadius - 0.3, orangeAreaAngle, row);
+  }
+  newOrange.mesh.position.setFromSpherical(sphericalHelperOranges);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const orangeVector = newOrange.mesh.position.clone().normalize();
+  newOrange.mesh.quaternion.setFromUnitVectors(orangeVector, rollingGroundVector);
+  newOrange.mesh.rotation.x += (Math.random() * (2 * Math.PI / 10)) + - Math.PI / 10;
+  rollingGroundSphere.add(newOrange.mesh);
+};
+
+const addGrapes = (inPath, row, isLeft) => {
+  let newGrapes;
+  if (inPath) {
+    if (grapesPool.length === 0) return;
+    newGrapes = grapesPool.pop();
+    newGrapes.visible = true;
+    grapesInPath.push(newGrapes);
+    sphericalHelperGrapes.set(worldRadius - 0.3, grapesPathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
+  } else {
+    newGrapes = createGrapes();
+    let grapesAreaAngle = 0;
+
+    if (isLeft) {
+      grapesAreaAngle = 1.68 + Math.random() * 0.1;
+    } else {
+      grapesAreaAngle = 1.46 - Math.random() * 0.1;
+    }
+    sphericalHelperGrapes.set(worldRadius - 0.3, grapesAreaAngle, row);
+  }
+  newGrapes.mesh.position.setFromSpherical(sphericalHelperGrapes);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const grapesVector = newGrapes.mesh.position.clone().normalize();
+  newGrapes.mesh.quaternion.setFromUnitVectors(grapesVector, rollingGroundVector);
+  newGrapes.mesh.rotation.x += (Math.random() * (2 * Math.PI / 10)) + - Math.PI / 10;
+  rollingGroundSphere.add(newGrapes.mesh);
+};
+
+//it returns the tree to the pool once it goes out of view
+const doTreeLogic = () => {
+  let oneTree;
+  const treePos = new THREE.Vector3();
+  const treesToRemove = [];
+  treesInPath.forEach(function (element, index) {
+    oneTree = treesInPath[index];
+    treePos.setFromMatrixPosition(oneTree.matrixWorld);
+    if (treePos.z > 6 && oneTree.visible) {
+      treesToRemove.push(oneTree);
+    } else { //check collision
+      if (treePos.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+        hasCollided = true;
+      }
+    }
+  });
+
+  let fromWhere;
+  treesToRemove.forEach(function (element, index) {
+    oneTree = treesToRemove[index];
+    fromWhere = treesInPath.indexOf(oneTree);
+    treesInPath.splice(fromWhere, 1);
+    treesPool.push(oneTree);
+    oneTree.visible = false;
+    console.log(`remove tree`);
+  });
+};
+
+const doAppleLogic = () => {
+  let oneApple;
+  const applePos = new THREE.Vector3();
+  const applesToRemove = [];
+  applesInPath.forEach(function (element, index) {
+    oneApple = applesInPath[index];
+    applePos.setFromMatrixPosition(oneApple.mesh.matrixWorld);
+    if (applePos.z > 6 && oneApple.visible) {
+      applesToRemove.push(oneApple);
+    } else {
+      if (applePos.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+        hasCollided = true;
+      }
+    }
+  });
+
+  let fromWhere;
+  applesToRemove.forEach(function (element, index) {
+    oneApple = applesToRemove[index];
+    fromWhere = applesInPath.indexOf(oneApple);
+    applesInPath.splice(fromWhere, 1);
+    applesPool.push(oneApple);
+    oneApple.visible = false;
+    console.log(`remove apple`);
+  });
+};
+
+const doBananaLogic = () => {
+  let oneBanana;
+  const bananaPos = new THREE.Vector3();
+  const bananasToRemove = [];
+  bananasInPath.forEach(function (element, index) {
+    oneBanana = bananasInPath[index];
+    bananaPos.setFromMatrixPosition(oneBanana.mesh.matrixWorld);
+    if (bananaPos.z > 6 && oneBanana.visible) {
+      bananasToRemove.push(oneBanana);
+    } else {
+      if (bananaPos.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+        hasCollided = true;
+      }
+    }
+  });
+
+  let fromWhere;
+  bananasToRemove.forEach(function (element, index) {
+    oneBanana = bananasToRemove[index];
+    fromWhere = bananasInPath.indexOf(oneBanana);
+    bananasInPath.splice(fromWhere, 1);
+    bananasPool.push(oneBanana);
+    oneBanana.visible = false;
+    console.log(`remove banana`);
+  });
+};
+
+const doOrangeLogic = () => {
+  let oneOrange;
+  const orangePos = new THREE.Vector3();
+  const orangesToRemove = [];
+  orangesInPath.forEach(function (element, index) {
+    oneOrange = orangesInPath[index];
+    orangePos.setFromMatrixPosition(oneOrange.mesh.matrixWorld);
+    if (orangePos.z > 6 && oneOrange.visible) {
+      orangesToRemove.push(oneOrange);
+    } else {
+      if (orangePos.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+        hasCollided = true;
+      }
+    }
+  });
+
+  let fromWhere;
+  orangesToRemove.forEach(function (element, index) {
+    oneOrange = orangesToRemove[index];
+    fromWhere = orangesInPath.indexOf(oneOrange);
+    orangesInPath.splice(fromWhere, 1);
+    orangesPool.push(oneOrange);
+    oneOrange.visible = false;
+    console.log(`remove orange`);
+  });
+};
+
+const doGrapesLogic = () => {
+  let oneGrapes;
+  const grapesPos = new THREE.Vector3();
+  const grapesToRemove = [];
+  grapesInPath.forEach(function (element, index) {
+    oneGrapes = grapesInPath[index];
+    grapesPos.setFromMatrixPosition(oneGrapes.mesh.matrixWorld);
+    if (grapesPos.z > 6 && oneGrapes.visible) {
+      grapesToRemove.push(oneGrapes);
+    } else {
+      if (grapesPos.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+        hasCollided = true;
+      }
+    }
+  });
+
+  let fromWhere;
+  grapesToRemove.forEach(function (element, index) {
+    oneGrapes = grapesToRemove[index];
+    fromWhere = grapesInPath.indexOf(oneGrapes);
+    grapesInPath.splice(fromWhere, 1);
+    grapesPool.push(oneGrapes);
+    oneGrapes.visible = false;
+    console.log(`remove grapes`);
+  });
+};
+
+//this method is called from update when enought time has elapsed after planting the last tree
+const addPathTree = () => {
+  const options = [0, 1, 2];
+  let lane = Math.floor(Math.random() * 3);
+  addTree(true, lane); // calling the addtree method with a different set of parameters where te tree gets placed in the selected path
+  options.splice(lane, 1);
+  if (Math.random() > 0.5) {
+    lane = Math.floor(Math.random() * 2);
+    addTree(true, options[lane]);
+  }
+};
+
+const addPathApple = () => {
+  const options = [0, 1, 2];
+  let lane = Math.floor(Math.random() * 3);
+  addApple(true, lane);
+  options.splice(lane, 1);
+  if (Math.random() > 0.5) {
+    lane = Math.floor(Math.random() * 2);
+    addApple(true, options[lane]);
+  }
+};
+
+const addPathBanana = () => {
+  const options = [0, 1, 2];
+  let lane = Math.floor(Math.random() * 3);
+  addBanana(true, lane);
+  options.splice(lane, 1);
+  if (Math.random() > 0.5) {
+    lane = Math.floor(Math.random() * 2);
+    addBanana(true, options[lane]);
+  }
+};
+
+const addPathOrange = () => {
+  const options = [0, 1, 2];
+  let lane = Math.floor(Math.random() * 3);
+  addOrange(true, lane);
+  options.splice(lane, 1);
+  if (Math.random() > 0.5) {
+    lane = Math.floor(Math.random() * 2);
+    addBanana(true, options[lane]);
+  }
+};
+
+const addPathGrapes = () => {
+  const options = [0, 1, 2];
+  let lane = Math.floor(Math.random() * 3);
+  addGrapes(true, lane);
+  options.splice(lane, 1);
+  if (Math.random() > 0.5) {
+    lane = Math.floor(Math.random() * 2);
+    addGrapes(true, options[lane]);
+  }
+};
+
 
 const onWindowResize = () => {
 	//resize & align
@@ -419,27 +746,71 @@ const onWindowResize = () => {
   camera.updateProjectionMatrix();
 };
 
-const update = () => {
-  rollingGroundSphere.rotation.x += rollingSpeed;
-  heroSphere.rotation.x -= heroRollingSpeed;
-  if (heroSphere.position.y <= heroBaseY) {
-    bounceValue = (Math.random() * 0.04) + 0.005;
+const createFly = () => {
+  fly = new Fly();
+  fly.mesh.scale.set(0.005, 0.005, 0.005);
+  fly.mesh.position.y = 1.8;
+  fly.mesh.position.x = 10;
+  fly.mesh.position.z = 4.8;
+  fly.mesh.rotation.y = Math.PI;
+  fly.mesh.rotation.x = Math.PI / 7;
+  scene.add(fly.mesh);
+};
+
+const updateFly = () => {
+  fly.mesh.position.y = mousePos.y + 2.4;
+  fly.mesh.position.x = mousePos.x + .1;
+  if (fly.mesh.position.y <= 1.8) {
+    fly.mesh.position.y = 1.9;
   }
-  heroSphere.position.y += bounceValue;
-  heroSphere.position.x = THREE.Math.lerp(heroSphere.position.x, currentLane, 2 * clock.getDelta());//clock.getElapsedTime());
-  bounceValue -= gravity;
-  if (clock.getElapsedTime() > treeReleaseInterval) {
+
+};
+
+const handleMouseMove = e => {
+  const tx = - 1 + (e.clientX / sceneWidth) * 2;
+  const ty  = 1 - (e.clientY / sceneHeight) * 2;
+  mousePos = {x: tx, y: ty};
+};
+
+const handleStartClicked = () => {
+  reset();
+  startInterval = setInterval(updateCounter, 1000);
+};
+
+const updateCounter = () => {
+  if (game.counter > 0) {
+    game.counter --;
+    document.getElementById(`counter`).innerHTML = game.counter;
+  } else if (game.counter === 0) {
+    document.getElementById(`counter`).innerHTML = `end game`;
+  }
+};
+
+const update = () => {
+
+  //wereld animeren
+  rollingGroundSphere.rotation.x += rollingSpeed;
+
+  //logica tijd/clock
+  if (clock.getElapsedTime() > releaseInterval) {
     clock.start();
     addPathTree();
     addPathApple();
-
-    // if (!hasCollided) {
-    //   console.log(``);
-    // }
+    addPathBanana();
+    addPathOrange();
+    addPathGrapes();
+    if (!hasCollided) {
+      console.log(`...`);
+    }
   }
+
+  //bomen en fruit
   doTreeLogic();
-  doExplosionLogic();
   doAppleLogic();
+  doBananaLogic();
+  doOrangeLogic();
+  doGrapesLogic();
+
   //animeren vlieg
   const leftWing = fly.mesh.children[3];
   const rightWing = fly.mesh.children[4];
@@ -462,132 +833,21 @@ const update = () => {
   rightWing.rotation.y -= 0.01 * factor;
 
   updateFly();
-
   render();
-  requestAnimationFrame(update);//request next update
+  requestAnimationFrame(update);
 };
 
-const doAppleLogic = () => {
-  let oneApple;
-  const applePos = new THREE.Vector3();
-  const applesToRemove = [];
-  applesInpath.forEach(function (element, index) {
-    oneApple = applesInpath[ index ];
-    applePos.setFromMatrixPosition(oneApple.matrixWorld);
-    if (applePos.z > 6 && oneApple.visible) {//gone out of our view zone
-      applesToRemove.push(oneApple);
-    } else {//check collision
-      if (applePos.distanceTo(fly)) {
-        console.log(`hit`);
-      }
-      if (applePos.distanceTo(fly.mesh.position) <= 0.6) {
-        console.log(`hit`);
-        // hasCollided = true;
-        explode();
-      }
-    }
-  });
-  let fromWhere;
-  applesToRemove.forEach(function (element, index) {
-    oneApple = applesToRemove[ index ];
-    fromWhere = applesInpath.indexOf(oneApple);
-    applesInpath.splice(fromWhere, 1);
-    treesPool.push(oneApple);
-    oneApple.visible = false;
-  });
-};
-
-const doTreeLogic = () => {
-  let oneTree;
-  const treePos = new THREE.Vector3();
-  const treesToRemove = [];
-  treesInpath.forEach(function (element, index) {
-    oneTree = treesInpath[ index ];
-    treePos.setFromMatrixPosition(oneTree.matrixWorld);
-    if (treePos.z > 6 && oneTree.visible) {//gone out of our view zone
-      treesToRemove.push(oneTree);
-    } else {//check collision
-      if (treePos.distanceTo(fly)) {
-        console.log(`hit`);
-      }
-      if (treePos.distanceTo(fly.mesh.position) <= 0.6) {
-        console.log(`hit`);
-        // hasCollided = true;
-        explode();
-      }
-    }
-  });
-  let fromWhere;
-  treesToRemove.forEach(function (element, index) {
-    oneTree = treesToRemove[ index ];
-    fromWhere = treesInpath.indexOf(oneTree);
-    treesInpath.splice(fromWhere, 1);
-    treesPool.push(oneTree);
-    oneTree.visible = false;
-  });
-};
-
-const doExplosionLogic = () => {
-  if (!particles.visible) return;
-  for (let i = 0;i < particleCount;i ++) {
-    particleGeometry.vertices[i].multiplyScalar(explosionPower);
-  }
-  if (explosionPower > 1.005) {
-    explosionPower -= 0.001;
-  } else {
-    particles.visible = false;
-  }
-  particleGeometry.verticesNeedUpdate = true;
-};
-
-const explode = () => {
-  particles.position.y = 2;
-  particles.position.z = 4.8;
-  particles.position.x = heroSphere.position.x;
-  for (let i = 0;i < particleCount;i ++) {
-    const vertex = new THREE.Vector3();
-    vertex.x = - 0.2 + Math.random() * 0.4;
-    vertex.y = - 0.2 + Math.random() * 0.4;
-    vertex.z = - 0.2 + Math.random() * 0.4;
-    particleGeometry.vertices[i] = vertex;
-  }
-  explosionPower = 1.07;
-  particles.visible = true;
-};
-
-const  handleMouseMove = e => {
-
-  const tx = - 1 + (e.clientX / window.innerWidth) * 2;
-  const ty = 1 - (e.clientY / window.innerHeight) * 2;
-  mousePos = {x: tx, y: ty};
-};
 const render = () => {
-  renderer.render(scene, camera);//draw
-};
-
-const handleStartClicked = () => {
-  reset();
-  startInterval = setInterval(updateCounter, 1000);
-};
-
-const updateCounter = () => {
-  if (game.counter > 0) {
-    game.counter --;
-    document.getElementById(`counter`).innerHTML = game.counter;
-  } else if (game.counter === 0) {
-    document.getElementById(`counter`).innerHTML = `end game`;
-  }
+  renderer.render(scene, camera);
 };
 
 const init = () => {
+
   createScene();
   createFly();
-  createApple();
-  createApplesPool();
   document.addEventListener(`mousemove`, handleMouseMove, false);
-  document.getElementById(`start-button`).addEventListener(`click`, handleStartClicked, false);
+  document.getElementById(`start-button`).addEventListener(`click`, handleStartClicked);
   update();
-
 };
 
 init();
