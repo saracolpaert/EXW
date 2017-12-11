@@ -3,7 +3,6 @@ import * as THREE from 'three';
 export default class Grapes {
   constructor() {
     this.mesh = new THREE.Object3D();
-
     const Colors = {
       purple: 0x9827FF,
       brown: 0x615517

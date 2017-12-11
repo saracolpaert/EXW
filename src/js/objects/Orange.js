@@ -3,7 +3,6 @@ import * as THREE from 'three';
 export default class Orange {
   constructor() {
     this.mesh = new THREE.Object3D();
-
     const Colors = {
       orange: 0xFF8427
     };
@@ -13,7 +12,6 @@ export default class Orange {
     const orange = new THREE.Mesh(geomOrange, matOrange);
     orange.castShadow = true;
     orange.recieveShadow = true;
-    orange.position.set(0, 50, 0);
 
     this.mesh.add(orange);
   }

@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import * as Tone from 'tone';
-
 import Fly from './objects/Fly';
 import Apple from './objects/Apple';
 import Banana from './objects/Banana';
@@ -21,7 +20,7 @@ const rollingSpeed = 0.003;
 
 //bomen
 let treesPool, treesInPath;
-const releaseInterval = 2;
+const releaseInterval = 1;
 let sphericalHelper, pathAngleValues;
 let vertexIndex, vertexVector, midPointVector, offset;
 
@@ -43,7 +42,10 @@ let sphericalHelperGrapes, grapesPathAngleValues;
 
 let clock;
 
-let hasCollided;
+
+//music
+
+let polySynth, distortion;
 
 const reset = () => {
   game = {
@@ -55,7 +57,6 @@ const reset = () => {
 
 const createScene = () => {
 
-  hasCollided = false;
 
   //bomen
   treesInPath = [];
@@ -68,25 +69,25 @@ const createScene = () => {
   applesInPath = [];
   applesPool = [];
   sphericalHelperApples = new THREE.Spherical();
-  applePathAngleValues = [1.52, 1.57, 1.62];
+  applePathAngleValues = [1.52, 1.53, 1.54, 1.55, 1.56, 1.57, 1.58, 1.59, 1.60, 1.61, 1.62];
 
   //bananas
   bananasInPath = [];
   bananasPool = [];
   sphericalHelperBananas = new THREE.Spherical();
-  bananasPathAngleValues = [1.52, 1.57, 1.62];
+  bananasPathAngleValues = [1.52, 1.53, 1.54, 1.55, 1.56, 1.57, 1.58, 1.59, 1.60, 1.61, 1.62];
 
   //oranges
   orangesInPath = [];
   orangesPool = [];
   sphericalHelperOranges = new THREE.Spherical();
-  orangesPathAngleValues = [1.52, 1.57, 1.62];
+  orangesPathAngleValues = [1.52, 1.53, 1.54, 1.55, 1.56, 1.57, 1.58, 1.59, 1.60, 1.61, 1.62];
 
   //grapes
   grapesInPath = [];
   grapesPool = [];
   sphericalHelperGrapes = new THREE.Spherical();
-  grapesPathAngleValues = [1.52, 1.57, 1.62];
+  grapesPathAngleValues = [1.52, 1.53, 1.54, 1.55, 1.56, 1.57, 1.58, 1.59, 1.60, 1.61, 1.62];
 
   //clock starten
   clock = new THREE.Clock();
@@ -206,7 +207,7 @@ const addLight = () => {
 
 //to plant trees on the path, we will make use of a pool of trees which are created on start
 const createTreesPool = () => {
-  const maxTreesInPool = 10;
+  const maxTreesInPool = 5;
   let newTree;
   for (let i = 0;i < maxTreesInPool;i ++) {
     newTree = createTree();
@@ -362,8 +363,8 @@ const addWorldTrees = () => {
 };
 
 const addWorldApples = () => {
-  const numApples = 5;
-  const gap = 4 / 3;
+  const numApples = 20;
+  const gap = 8 / 3;
   for (let i = 0;i < numApples;i ++) {
     addApple(false, i * gap, true);
     addApple(false, i * gap, false);
@@ -372,7 +373,7 @@ const addWorldApples = () => {
 
 const addWorldBananas = () => {
   const numBananas = 5;
-  const gap = 4 / 3;
+  const gap = 6 / 3;
   for (let i = 0;i < numBananas;i ++) {
     addBanana(false, i * gap, true);
     addBanana(false, i * gap, false);
@@ -435,7 +436,7 @@ const addApple = (inPath, row, isLeft) => {
     newApple = applesPool.pop();
     newApple.visible = true;
     applesInPath.push(newApple);
-    sphericalHelperApples.set(worldRadius - 0.3, applePathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
+    sphericalHelperApples.set(worldRadius - .7 + Math.random() * 1.5, applePathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
   } else {
     newApple = createApple();
     let appleAreaAngle = 0;
@@ -445,7 +446,7 @@ const addApple = (inPath, row, isLeft) => {
     } else {
       appleAreaAngle = 1.46 - Math.random() * 0.1;
     }
-    sphericalHelperApples.set(worldRadius - 0.3, appleAreaAngle, row);
+    sphericalHelperApples.set(worldRadius - .7 + Math.random() * 1.5, appleAreaAngle, row);
   }
   newApple.mesh.position.setFromSpherical(sphericalHelperApples);
   const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
@@ -490,7 +491,7 @@ const addOrange = (inPath, row, isLeft) => {
     newOrange = orangesPool.pop();
     newOrange.visible = true;
     orangesInPath.push(newOrange);
-    sphericalHelperOranges.set(worldRadius - 0.3, orangesPathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
+    sphericalHelperOranges.set(worldRadius - .7 + Math.random() * 1.5, orangesPathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
   } else {
     newOrange = createOrange();
     let orangeAreaAngle = 0;
@@ -500,7 +501,7 @@ const addOrange = (inPath, row, isLeft) => {
     } else {
       orangeAreaAngle = 1.46 - Math.random() * 0.1;
     }
-    sphericalHelperOranges.set(worldRadius - 0.3, orangeAreaAngle, row);
+    sphericalHelperOranges.set(worldRadius - .7 + Math.random() * 1.5, orangeAreaAngle, row);
   }
   newOrange.mesh.position.setFromSpherical(sphericalHelperOranges);
 
@@ -518,7 +519,7 @@ const addGrapes = (inPath, row, isLeft) => {
     newGrapes = grapesPool.pop();
     newGrapes.visible = true;
     grapesInPath.push(newGrapes);
-    sphericalHelperGrapes.set(worldRadius - 0.3, grapesPathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
+    sphericalHelperGrapes.set(worldRadius - .7 + Math.random() * 1.5, grapesPathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
   } else {
     newGrapes = createGrapes();
     let grapesAreaAngle = 0;
@@ -528,7 +529,7 @@ const addGrapes = (inPath, row, isLeft) => {
     } else {
       grapesAreaAngle = 1.46 - Math.random() * 0.1;
     }
-    sphericalHelperGrapes.set(worldRadius - 0.3, grapesAreaAngle, row);
+    sphericalHelperGrapes.set(worldRadius - .7 + Math.random() * 1.5, grapesAreaAngle, row);
   }
   newGrapes.mesh.position.setFromSpherical(sphericalHelperGrapes);
 
@@ -552,7 +553,6 @@ const doTreeLogic = () => {
     } else { //check collision
       if (treePos.distanceTo(fly.mesh.position) <= 0) {
         console.log(`hit`);
-        hasCollided = true;
       }
     }
   });
@@ -567,6 +567,17 @@ const doTreeLogic = () => {
   });
 };
 
+const music = () => {
+  let oneApple;
+  const applePos = new THREE.Vector3();
+  applesInPath.forEach(function (element, index) {
+    oneApple = applesInPath[index];
+    applePos.setFromMatrixPosition(oneApple.mesh.matrixWorld);
+  });
+  distortion = new Tone.Distortion(1 + applePos.x / 4);
+  polySynth = new Tone.PolySynth(4, Tone.Synth).chain(distortion, Tone.Master);
+};
+
 const doAppleLogic = () => {
   let oneApple;
   const applePos = new THREE.Vector3();
@@ -577,27 +588,15 @@ const doAppleLogic = () => {
     if (applePos.z > 6 && oneApple.visible) {
       applesToRemove.push(oneApple);
     } else {
-      if (applePos.distanceTo(fly.mesh.position) <= .8) {
-        console.log(`hit`);
-        const distortion = new Tone.Distortion(1 + applePos.x / 4);
-        const polySynth = new Tone.PolySynth(4, Tone.Synth).chain(distortion, Tone.Master);
+
+      const firstBB = new THREE.Box3().setFromObject(fly.mesh);
+      const secondBB = new THREE.Box3().setFromObject(oneApple.mesh);
+      const collision = firstBB.intersectsBox(secondBB);
+      if (collision === true) {
         polySynth.triggerAttackRelease(`C4`, `8n`);
-        hasCollided = true;
       }
     }
   });
-
-  // applesPool.forEach((element, index) => {
-  //   const oneApple = applesInPath [index];
-  //   const applePos = oneApple.mesh.position;
-  //   console.log(applePos.distanceTo(fly.mesh.position));
-  //   if (applePos.distanceTo(fly.mesh.position) <= 1.5) {
-  //     // const distortion = new Tone.Distortion(1 + applePos.x / 4);
-  //     // const polySynth = new Tone.PolySynth(4, Tone.Synth).chain(distortion, Tone.Master);
-  //     // polySynth.triggerAttackRelease(`C4`, `8n`);
-  //     console.log(`hit apple`);
-  //   }
-  // });
 
   let fromWhere;
   applesToRemove.forEach(function (element, index) {
@@ -619,9 +618,11 @@ const doBananaLogic = () => {
     if (bananaPos.z > 6 && oneBanana.visible) {
       bananasToRemove.push(oneBanana);
     } else {
-      if (bananaPos.distanceTo(fly.mesh.position) <= 0) {
-        console.log(`hit`);
-        hasCollided = true;
+      const firstBB = new THREE.Box3().setFromObject(fly.mesh);
+      const secondBB = new THREE.Box3().setFromObject(oneBanana.mesh);
+      const collision = firstBB.intersectsBox(secondBB);
+      if (collision === true) {
+        polySynth.triggerAttackRelease(`A1`, `32n`);
       }
     }
   });
@@ -646,9 +647,11 @@ const doOrangeLogic = () => {
     if (orangePos.z > 6 && oneOrange.visible) {
       orangesToRemove.push(oneOrange);
     } else {
-      if (orangePos.distanceTo(fly.mesh.position) <= 0) {
-        console.log(`hit`);
-        hasCollided = true;
+      const firstBB = new THREE.Box3().setFromObject(fly.mesh);
+      const secondBB = new THREE.Box3().setFromObject(oneOrange.mesh);
+      const collision = firstBB.intersectsBox(secondBB);
+      if (collision === true) {
+        polySynth.triggerAttackRelease(`E4`, `2n`, `0:3`);
       }
     }
   });
@@ -673,9 +676,11 @@ const doGrapesLogic = () => {
     if (grapesPos.z > 6 && oneGrapes.visible) {
       grapesToRemove.push(oneGrapes);
     } else {
-      if (grapesPos.distanceTo(fly.mesh.position) <= 0) {
-        console.log(`hit`);
-        hasCollided = true;
+      const firstBB = new THREE.Box3().setFromObject(fly.mesh);
+      const secondBB = new THREE.Box3().setFromObject(oneGrapes.mesh);
+      const collision = firstBB.intersectsBox(secondBB);
+      if (collision === true) {
+        polySynth.triggerAttackRelease(`B1`, `16n`, `2n + 8t`);
       }
     }
   });
@@ -703,47 +708,31 @@ const addPathTree = () => {
 };
 
 const addPathApple = () => {
-  const options = [0, 1, 2];
-  let lane = Math.floor(Math.random() * 3);
+  const options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const lane = Math.floor(Math.random() * 10);
   addApple(true, lane);
   options.splice(lane, 1);
-  if (Math.random() > 0.5) {
-    lane = Math.floor(Math.random() * 2);
-    addApple(true, options[lane]);
-  }
 };
 
 const addPathBanana = () => {
-  const options = [0, 1, 2];
-  let lane = Math.floor(Math.random() * 3);
+  const options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const lane = Math.floor(Math.random() * 10);
   addBanana(true, lane);
   options.splice(lane, 1);
-  if (Math.random() > 0.5) {
-    lane = Math.floor(Math.random() * 2);
-    addBanana(true, options[lane]);
-  }
 };
 
 const addPathOrange = () => {
-  const options = [0, 1, 2];
-  let lane = Math.floor(Math.random() * 3);
+  const options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const lane = Math.floor(Math.random() * 10);
   addOrange(true, lane);
   options.splice(lane, 1);
-  if (Math.random() > 0.5) {
-    lane = Math.floor(Math.random() * 2);
-    addBanana(true, options[lane]);
-  }
 };
 
 const addPathGrapes = () => {
-  const options = [0, 1, 2];
-  let lane = Math.floor(Math.random() * 3);
+  const options = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const lane = Math.floor(Math.random() * 10);
   addGrapes(true, lane);
   options.splice(lane, 1);
-  if (Math.random() > 0.5) {
-    lane = Math.floor(Math.random() * 2);
-    addGrapes(true, options[lane]);
-  }
 };
 
 
@@ -800,18 +789,19 @@ const update = () => {
 
   //wereld animeren
   rollingGroundSphere.rotation.x += rollingSpeed;
-
   //logica tijd/clock
-  if (clock.getElapsedTime() > releaseInterval) {
-    clock.start();
-    addPathTree();
+  if (clock.getElapsedTime() > Math.random() * 3) {
     addPathApple();
     addPathBanana();
     addPathOrange();
     addPathGrapes();
-    if (!hasCollided) {
-      console.log(`...`);
-    }
+    addPathTree();
+    clock.start();
+  }
+
+  if (clock.getElapsedTime() > releaseInterval) {
+    console.log(`release`);
+    clock.start();
   }
 
   //bomen en fruit
@@ -852,9 +842,10 @@ const render = () => {
 };
 
 const init = () => {
-
   createScene();
   createFly();
+  music();
+
   document.addEventListener(`mousemove`, handleMouseMove, false);
   document.getElementById(`start-button`).addEventListener(`click`, handleStartClicked);
   update();
