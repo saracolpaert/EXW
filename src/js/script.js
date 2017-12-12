@@ -5,7 +5,6 @@ import Apple from './objects/Apple';
 import Banana from './objects/Banana';
 import Orange from './objects/Orange';
 import Grapes from './objects/Grapes';
-//import Tekst from './objects/Tekst';
 
 let sceneWidth, sceneHeight, scene, camera, renderer, dom, sun, game, startInterval;
 //vlieg
@@ -44,6 +43,10 @@ let clock;
 
 //music
 let polySynth, distortion;
+let totalMusic;
+let collisionApple;
+
+let startTime;
 
 //UI
 const replayMessage = document.querySelector(`.replay-button`);
@@ -52,15 +55,47 @@ const playMessage = document.querySelector(`.start-button`);
 const resetGame = () => {
 
   game = {
-    counter: 3,
+    counter: 10,
     status: `start`
   };
   clearInterval(startInterval);
   hideReplay();
+  removeScene();
+
+  dom = document.querySelector(`.world`);
+  const counter = document.createElement(`h1`);
+  dom.appendChild(counter);
+  counter.setAttribute(`id`, `counter`);
+
+  const replay = document.createElement(`button`);
+  dom.appendChild(replay);
+  replay.innerHTML = `replay`;
+  replay.className = `replay-button`;
+  replay.setAttribute(`id`, `replay`);
+  replay.style.display = `none`;
+  replay.addEventListener(`click`, handleReplayClicked);
+  createScene();
+  createFly();
+  music();
+
 };
 
+const removeScene = () => {
+  if (scene) {
+    scene = null;
+    camera = null;
+    dom = document.querySelector(`.world`);
+    empty(dom);
+  }
+};
+
+const empty = elem => {
+  while (elem.lastChild) elem.removeChild(elem.lastChild);
+};
 
 const createScene = () => {
+
+  totalMusic = [];
 
   //bomen
   treesInPath = [];
@@ -96,6 +131,8 @@ const createScene = () => {
   //clock starten
   clock = new THREE.Clock();
   //clock.start();
+  const d = new Date();
+  startTime = d.getTime();
 
   sceneWidth = window.innerWidth;
   sceneHeight = window.innerHeight;
@@ -350,16 +387,6 @@ const createOrange = () => {
   return orange;
 };
 
-// const createTekst = () => {
-//   const tekst = new Tekst();
-//   tekst.mesh.position.y = 1.8;
-//   tekst.mesh.position.x = 10;
-//   tekst.mesh.position.z = 4.8;
-//   tekst.mesh.rotation.y = Math.PI;
-//   //tekst.mesh.rotation.x = Math.PI / 7;
-//   scene.add(tekst.mesh);
-// };
-
 const createGrapes = () => {
   const grapes = new Grapes();
   grapes.mesh.scale.set(0.02, 0.02, 0.02);
@@ -593,6 +620,14 @@ const music = () => {
   polySynth = new Tone.PolySynth(4, Tone.Synth).chain(distortion, Tone.Master);
 };
 
+const appleMusic = () => {
+  const sound = polySynth.triggerAttackRelease(`C4`, `8n`);
+  const currentTime = new Date().getTime();
+  const time = currentTime - startTime;
+  const detail = {sound, time};
+  totalMusic.push(detail);
+};
+
 const doAppleLogic = () => {
   let oneApple;
   const applePos = new THREE.Vector3();
@@ -600,6 +635,8 @@ const doAppleLogic = () => {
   applesInPath.forEach(function (element, index) {
     oneApple = applesInPath[index];
     applePos.setFromMatrixPosition(oneApple.mesh.matrixWorld);
+    distortion = new Tone.Distortion(1 + applePos.x / 4);
+
     if (applePos.z > 6 && oneApple.visible) {
       applesToRemove.push(oneApple);
     } else {
@@ -608,7 +645,7 @@ const doAppleLogic = () => {
       const secondBB = new THREE.Box3().setFromObject(oneApple.mesh);
       const collision = firstBB.intersectsBox(secondBB);
       if (collision === true) {
-        polySynth.triggerAttackRelease(`C4`, `8n`);
+        collisionApple = true;
       }
     }
   });
@@ -637,7 +674,11 @@ const doBananaLogic = () => {
       const secondBB = new THREE.Box3().setFromObject(oneBanana.mesh);
       const collision = firstBB.intersectsBox(secondBB);
       if (collision === true) {
-        polySynth.triggerAttackRelease(`A1`, `32n`);
+        const sound = polySynth.triggerAttackRelease(`A1`, `32n`);
+        const currentTime = new Date().getTime();
+        const time = currentTime - startTime;
+        const detail = {sound, time};
+        totalMusic.push(detail);
       }
     }
   });
@@ -666,7 +707,11 @@ const doOrangeLogic = () => {
       const secondBB = new THREE.Box3().setFromObject(oneOrange.mesh);
       const collision = firstBB.intersectsBox(secondBB);
       if (collision === true) {
-        polySynth.triggerAttackRelease(`E4`, `2n`, `0:3`);
+        const sound = polySynth.triggerAttackRelease(`E4`, `2n`, `0:3`);
+        const currentTime = new Date().getTime();
+        const time = currentTime - startTime;
+        const detail = {sound, time};
+        totalMusic.push(detail);
       }
     }
   });
@@ -695,7 +740,11 @@ const doGrapesLogic = () => {
       const secondBB = new THREE.Box3().setFromObject(oneGrapes.mesh);
       const collision = firstBB.intersectsBox(secondBB);
       if (collision === true) {
-        polySynth.triggerAttackRelease(`B1`, `16n`, `2n + 8t`);
+        const sound = polySynth.triggerAttackRelease(`B1`, `16n`, `2n + 8t`);
+        const currentTime = new Date().getTime();
+        const time = currentTime - startTime;
+        const detail = {sound, time};
+        totalMusic.push(detail);
       }
     }
   });
@@ -787,16 +836,32 @@ const handleMouseMove = e => {
 };
 
 const handleStartClicked = () => {
+  document.getElementById(`counter`).innerHTML = game.counter;
   game.status = `playing`;
   hidePlay();
   startInterval = setInterval(updateCounter, 1000);
 };
 
 const handleReplayClicked = () => {
-  console.log(`replay`);
   resetGame();
+  document.getElementById(`counter`).innerHTML = game.counter;
   game.status = `playing`;
   startInterval = setInterval(updateCounter, 1000);
+};
+
+const endGame = () => {
+  document.getElementById(`counter`).innerHTML = `end game`;
+  hidePlay();
+  showReplay();
+  game.status = `waitingreplay`;
+  for (let i = scene.children.length - 1;i >= 0;i --) {
+    if (scene.children[i].type === `Mesh`)
+      scene.remove(scene.children[i]);
+  }
+  // totalMusic.forEach(sound => {
+  //   console.log(sound);
+  //   // sound.sound.triggerAttackRelease;
+  // });
 };
 
 const updateCounter = () => {
@@ -805,11 +870,7 @@ const updateCounter = () => {
     document.getElementById(`counter`).innerHTML = game.counter;
     hideReplay();
   } else if (game.counter === 0) {
-    document.getElementById(`counter`).innerHTML = `end game`;
-    hidePlay();
-    showReplay();
-    game.status = `waitingreplay`;
-    //clock.stop();
+    endGame();
   }
 };
 
@@ -819,7 +880,7 @@ const hidePlay = () => {
 };
 
 const showReplay = () => {
-  replayMessage.style.display = `flex`;
+  document.getElementById(`replay`).style.display = `flex`;
 };
 
 const hideReplay = () => {
@@ -828,6 +889,11 @@ const hideReplay = () => {
 
 
 const update = () => {
+
+  if (collisionApple === true) {
+    appleMusic();
+    collisionApple = false;
+  }
 
   if (game.status === `playing`) {
   //wereld animeren
@@ -873,10 +939,9 @@ const update = () => {
     rightWing.rotation.y -= 0.01 * factor;
 
     updateFly();
-
-  } else if (game.status === `replay`) {
-    console.log();
   }
+
+  // console.log(totalMusic);
   render();
   requestAnimationFrame(update);
 };
@@ -886,17 +951,11 @@ const render = () => {
 };
 
 const init = () => {
-
-
   resetGame();
-  createScene();
   createFly();
   music();
-
   document.addEventListener(`mousemove`, handleMouseMove, false);
   playMessage.addEventListener(`click`, handleStartClicked);
-  replayMessage.addEventListener(`click`, handleReplayClicked);
-
   update();
 };
 
