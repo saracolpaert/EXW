@@ -20,7 +20,6 @@ const rollingSpeed = 0.003;
 
 //bomen
 let treesPool, treesInPath;
-const releaseInterval = 1;
 let sphericalHelper, pathAngleValues;
 let vertexIndex, vertexVector, midPointVector, offset;
 
@@ -42,21 +41,25 @@ let sphericalHelperGrapes, grapesPathAngleValues;
 
 let clock;
 
-
 //music
-
 let polySynth, distortion;
 
-const reset = () => {
+//UI
+const replayMessage = document.querySelector(`.replay-button`);
+const playMessage = document.querySelector(`.start-button`);
+
+const resetGame = () => {
+
   game = {
-    counter: 6
+    counter: 3,
+    status: `start`
   };
   clearInterval(startInterval);
+  hideReplay();
 };
 
 
 const createScene = () => {
-
 
   //bomen
   treesInPath = [];
@@ -91,7 +94,7 @@ const createScene = () => {
 
   //clock starten
   clock = new THREE.Clock();
-  clock.start();
+  //clock.start();
 
   sceneWidth = window.innerWidth;
   sceneHeight = window.innerHeight;
@@ -118,7 +121,7 @@ const createScene = () => {
   renderer.setSize(sceneWidth, sceneHeight);
 
   //dom ophalen
-  dom = document.getElementById(`world`);
+  dom = document.querySelector(`.world`);
   dom.appendChild(renderer.domElement);
 
   //resize callback
@@ -131,7 +134,6 @@ const createScene = () => {
   createGrapesPool();
   addWorld();
   addLight();
-
 };
 
 const addWorld = () => {
@@ -175,7 +177,6 @@ const addWorld = () => {
       sphereGeometry.vertices[i + vertexIndex] = (vertexVector.add(offset));
     }
   }
-
   //mesh wereld aanmaken
   rollingGroundSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
   rollingGroundSphere.receiveShadow = true;
@@ -191,6 +192,8 @@ const addWorld = () => {
   addWorldBananas();
   addWorldOranges();
   addWorldGrapes();
+
+
 };
 
 const addLight = () => {
@@ -205,7 +208,7 @@ const addLight = () => {
   scene.add(sun);
 };
 
-//to plant trees on the path, we will make use of a pool of trees which are created on start
+//to plant trees on the path, extra bomen buiten diegene die worden aangemaak in addWorldTrees voor het begin
 const createTreesPool = () => {
   const maxTreesInPool = 5;
   let newTree;
@@ -354,8 +357,8 @@ const createGrapes = () => {
 
 // one set of trees is placed outside the rolling track to create the world
 const addWorldTrees = () => {
-  const numTrees = 36;
-  const gap = 6.28 / 36;
+  const numTrees = 10;
+  const gap = 1;
   for (let i = 0;i < numTrees;i ++) {
     addTree(false, i * gap, true);
     addTree(false, i * gap, false);
@@ -568,6 +571,7 @@ const doTreeLogic = () => {
 };
 
 const music = () => {
+
   let oneApple;
   const applePos = new THREE.Vector3();
   applesInPath.forEach(function (element, index) {
@@ -772,7 +776,15 @@ const handleMouseMove = e => {
 };
 
 const handleStartClicked = () => {
-  reset();
+  game.status = `playing`;
+  hidePlay();
+  startInterval = setInterval(updateCounter, 1000);
+};
+
+const handleReplayClicked = () => {
+  console.log(`replay`);
+  resetGame();
+  game.status = `playing`;
   startInterval = setInterval(updateCounter, 1000);
 };
 
@@ -780,59 +792,80 @@ const updateCounter = () => {
   if (game.counter > 0) {
     game.counter --;
     document.getElementById(`counter`).innerHTML = game.counter;
+    hideReplay();
   } else if (game.counter === 0) {
     document.getElementById(`counter`).innerHTML = `end game`;
+    hidePlay();
+    showReplay();
+    game.status = `waitingreplay`;
+    //clock.stop();
   }
 };
 
+const hidePlay = () => {
+  document.querySelector(`.start-game`).style.display = `none`;
+  playMessage.style.display = `none`;
+};
+
+const showReplay = () => {
+  replayMessage.style.display = `flex`;
+};
+
+const hideReplay = () => {
+  replayMessage.style.display = `none`;
+};
+
+
 const update = () => {
 
+  if (game.status === `playing`) {
   //wereld animeren
-  rollingGroundSphere.rotation.x += rollingSpeed;
-  //logica tijd/clock
-  if (clock.getElapsedTime() > Math.random() * 3) {
-    addPathApple();
-    addPathBanana();
-    addPathOrange();
-    addPathGrapes();
-    addPathTree();
-    clock.start();
-  }
+    rollingGroundSphere.rotation.x += rollingSpeed;
 
-  if (clock.getElapsedTime() > releaseInterval) {
-    console.log(`release`);
-    clock.start();
-  }
+
+  //logica tijd/clock / releaseinterval
+    if (clock.getElapsedTime() > Math.random() * 3) {
+      addPathApple();
+      addPathBanana();
+      addPathOrange();
+      addPathGrapes();
+      addPathTree();
+      clock.start();
+    }
 
   //bomen en fruit
-  doTreeLogic();
-  doAppleLogic();
-  doBananaLogic();
-  doOrangeLogic();
-  doGrapesLogic();
+    doTreeLogic();
+    doAppleLogic();
+    doBananaLogic();
+    doOrangeLogic();
+    doGrapesLogic();
 
   //animeren vlieg
-  const leftWing = fly.mesh.children[3];
-  const rightWing = fly.mesh.children[4];
+    const leftWing = fly.mesh.children[3];
+    const rightWing = fly.mesh.children[4];
 
-  if (factor === 1) {
-    if (leftWing.rotation.x > Math.PI / 4) {
-      factor = - 1;
+    if (factor === 1) {
+      if (leftWing.rotation.x > Math.PI / 4) {
+        factor = - 1;
+      }
     }
-  }
 
-  if (factor === - 1) {
-    if (leftWing.rotation.x < 0.1) {
-      factor = 1;
+    if (factor === - 1) {
+      if (leftWing.rotation.x < 0.1) {
+        factor = 1;
+      }
     }
+
+    leftWing.rotation.x += 0.06 * factor;
+    leftWing.rotation.y += 0.01 * factor;
+    rightWing.rotation.x += 0.06 * factor;
+    rightWing.rotation.y -= 0.01 * factor;
+
+    updateFly();
+
+  } else if (game.status === `replay`) {
+    console.log();
   }
-
-  leftWing.rotation.x += 0.06 * factor;
-  leftWing.rotation.y += 0.01 * factor;
-  rightWing.rotation.x += 0.06 * factor;
-  rightWing.rotation.y -= 0.01 * factor;
-
-  updateFly();
   render();
   requestAnimationFrame(update);
 };
@@ -842,12 +875,17 @@ const render = () => {
 };
 
 const init = () => {
+
+
+  resetGame();
   createScene();
   createFly();
   music();
 
   document.addEventListener(`mousemove`, handleMouseMove, false);
-  document.getElementById(`start-button`).addEventListener(`click`, handleStartClicked);
+  playMessage.addEventListener(`click`, handleStartClicked);
+  replayMessage.addEventListener(`click`, handleReplayClicked);
+
   update();
 };
 
