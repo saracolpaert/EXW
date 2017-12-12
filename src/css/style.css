@@ -3,6 +3,8 @@
 
 html {
   background-color: var(--bg-color);
+  font-family: Arial;
+  text-align: center;
 }
 
 h1 {
@@ -15,4 +17,34 @@ h1 {
   height: 100%;
   position: absolute;
 
+}
+
+.title-game {
+  font-size: 9rem;
+  color: #41c7f4;
+  text-transform: uppercase;
+  padding-top: 20rem;
+}
+
+.explanation-game {
+  font-size: 2.5rem;
+  color: #4cd2ff;
+  margin-top: 3rem;
+}
+
+.start-button {
+  margin-top: 5rem;
+  border: #4cd2ff;
+  border-radius: 1.5rem;
+  background-color: #4cd2ff;
+  color: white;
+  width: 20rem;
+  height: 5.5rem;
+  font-size: 3rem;
+  text-transform: uppercase;
+}
+
+.start-button:hover {
+  background-color: white;
+  color: #4cd2ff;
 }

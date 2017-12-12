@@ -5,6 +5,7 @@ import Apple from './objects/Apple';
 import Banana from './objects/Banana';
 import Orange from './objects/Orange';
 import Grapes from './objects/Grapes';
+//import Tekst from './objects/Tekst';
 
 let sceneWidth, sceneHeight, scene, camera, renderer, dom, sun, game, startInterval;
 //vlieg
@@ -348,6 +349,16 @@ const createOrange = () => {
   orange.mesh.scale.set(0.03, 0.03, 0.03);
   return orange;
 };
+
+// const createTekst = () => {
+//   const tekst = new Tekst();
+//   tekst.mesh.position.y = 1.8;
+//   tekst.mesh.position.x = 10;
+//   tekst.mesh.position.z = 4.8;
+//   tekst.mesh.rotation.y = Math.PI;
+//   //tekst.mesh.rotation.x = Math.PI / 7;
+//   scene.add(tekst.mesh);
+// };
 
 const createGrapes = () => {
   const grapes = new Grapes();
