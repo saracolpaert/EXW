@@ -621,7 +621,7 @@ const music = () => {
 };
 
 const appleMusic = () => {
-  polySynth = new Tone.PolySynth(4, Tone.Synth).chain(distortion, Tone.Master);
+  //polySynth = new Tone.PolySynth(4, Tone.Synth).chain(distortion, Tone.Master);
   const sound = polySynth.triggerAttackRelease(`C4`, `8n`);
   const currentTime = new Date().getTime();
   const time = currentTime - startTime;
@@ -636,7 +636,8 @@ const doAppleLogic = () => {
   applesInPath.forEach(function (element, index) {
     oneApple = applesInPath[index];
     applePos.setFromMatrixPosition(oneApple.mesh.matrixWorld);
-    distortion = new Tone.Distortion(1 + applePos.x / 4);
+    //distortion = new Tone.Distortion(1 + applePos.x / 4);
+    distortion.distortion = 1 + applePos.x / 4;
 
     if (applePos.z > 6 && oneApple.visible) {
       applesToRemove.push(oneApple);
@@ -665,6 +666,17 @@ const doBananaLogic = () => {
   let oneBanana;
   const bananaPos = new THREE.Vector3();
   const bananasToRemove = [];
+
+
+  // const botsendeBananen = bananasInPath.filter(banana => {
+  //   return true of false
+  //   true: de banaan botst
+  //   false: de banaan botst niet
+  // });
+  //
+  // console.log(botsendeBananen.length);
+
+
   bananasInPath.forEach(function (element, index) {
     oneBanana = bananasInPath[index];
     bananaPos.setFromMatrixPosition(oneBanana.mesh.matrixWorld);
@@ -888,13 +900,50 @@ const hideReplay = () => {
   replayMessage.style.display = `none`;
 };
 
+// lastColl is standaard False
+let lastColl = collisionApple;
 
 const update = () => {
 
-  if (collisionApple === true) {
+
+  // if (collisionApple && lastColl === collisionApple) {
+
+  if (collisionApple && !lastColl) {
+    //lastColl = collisionApple;
+    console.log(`blob`);
     appleMusic();
-    collisionApple = false;
   }
+
+  lastColl = collisionApple;
+
+  collisionApple = false;
+
+
+  //
+  // if (collisionApple === true) {
+  //   appleMusic();
+  //   collisionApple = false;
+  // }
+
+
+  // CurrentColl wordt constant geupdate standaard ook False
+  // Totdat collsion = true dan wordt currentColl true
+  const currentColl = collisionApple;
+  // we checken of lastColl (van de vorige frame) gelijk is aan de huidige frame
+  // standaard is dat zo, als er een collision is niet en wordt de if uitgevoerd
+  if (currentColl !== lastColl) {
+    //console.log(`blob`);
+  }
+
+  // console.log(currentColl);
+
+  // zet de vorige frame terug naar false
+
+  // if (!currentColl) {
+  //   lastColl = currentColl;
+  // }
+  //
+  // lastColl = currentColl;
 
   if (game.status === `playing`) {
   //wereld animeren
@@ -953,6 +1002,12 @@ const update = () => {
 
   // console.log(totalMusic);
   render();
+
+  // console.log(`Col Apple`, collisionApple);
+  // console.log(`LastColl`, lastColl);
+  // console.log(`CurrentColl`, currentColl);
+
+
   requestAnimationFrame(update);
 };
 
