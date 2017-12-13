@@ -55,7 +55,7 @@ const playMessage = document.querySelector(`.start-button`);
 const resetGame = () => {
 
   game = {
-    counter: 10,
+    counter: 30,
     status: `start`
   };
   clearInterval(startInterval);
@@ -102,7 +102,7 @@ const createScene = () => {
   treesPool = [];
   sphericalHelper = new THREE.Spherical();
   //angle values for each path on the sphere
-  pathAngleValues = [1.52, 1.57, 1.62];
+  pathAngleValues = [1.52, 1.62];
 
   //appels
   applesInPath = [];
@@ -532,7 +532,7 @@ const addOrange = (inPath, row, isLeft) => {
     newOrange = orangesPool.pop();
     newOrange.visible = true;
     orangesInPath.push(newOrange);
-    sphericalHelperOranges.set(worldRadius - .7 + Math.random() * 1.5, orangesPathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
+    sphericalHelperOranges.set(worldRadius + .1 + Math.random() * 1.2, orangesPathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
   } else {
     newOrange = createOrange();
     let orangeAreaAngle = 0;
@@ -560,7 +560,7 @@ const addGrapes = (inPath, row, isLeft) => {
     newGrapes = grapesPool.pop();
     newGrapes.visible = true;
     grapesInPath.push(newGrapes);
-    sphericalHelperGrapes.set(worldRadius - .7 + Math.random() * 1.5, grapesPathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
+    sphericalHelperGrapes.set(worldRadius - .3 + Math.random() * 1.5, grapesPathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
   } else {
     newGrapes = createGrapes();
     let grapesAreaAngle = 0;
@@ -621,6 +621,7 @@ const music = () => {
 };
 
 const appleMusic = () => {
+  polySynth = new Tone.PolySynth(4, Tone.Synth).chain(distortion, Tone.Master);
   const sound = polySynth.triggerAttackRelease(`C4`, `8n`);
   const currentTime = new Date().getTime();
   const time = currentTime - startTime;
@@ -674,7 +675,7 @@ const doBananaLogic = () => {
       const secondBB = new THREE.Box3().setFromObject(oneBanana.mesh);
       const collision = firstBB.intersectsBox(secondBB);
       if (collision === true) {
-        const sound = polySynth.triggerAttackRelease(`A1`, `32n`);
+        const sound = polySynth.triggerAttackRelease(`B3`, `8n`);
         const currentTime = new Date().getTime();
         const time = currentTime - startTime;
         const detail = {sound, time};
@@ -707,7 +708,7 @@ const doOrangeLogic = () => {
       const secondBB = new THREE.Box3().setFromObject(oneOrange.mesh);
       const collision = firstBB.intersectsBox(secondBB);
       if (collision === true) {
-        const sound = polySynth.triggerAttackRelease(`E4`, `2n`, `0:3`);
+        const sound = polySynth.triggerAttackRelease(`E4`, `8n`);
         const currentTime = new Date().getTime();
         const time = currentTime - startTime;
         const detail = {sound, time};
@@ -740,7 +741,7 @@ const doGrapesLogic = () => {
       const secondBB = new THREE.Box3().setFromObject(oneGrapes.mesh);
       const collision = firstBB.intersectsBox(secondBB);
       if (collision === true) {
-        const sound = polySynth.triggerAttackRelease(`B1`, `16n`, `2n + 8t`);
+        const sound = polySynth.triggerAttackRelease(`D6`, `16n`);
         const currentTime = new Date().getTime();
         const time = currentTime - startTime;
         const detail = {sound, time};
@@ -761,8 +762,8 @@ const doGrapesLogic = () => {
 
 //this method is called from update when enought time has elapsed after planting the last tree
 const addPathTree = () => {
-  const options = [0, 1, 2];
-  let lane = Math.floor(Math.random() * 3);
+  const options = [0, 1];
+  let lane = Math.floor(Math.random() * 2);
   addTree(true, lane); // calling the addtree method with a different set of parameters where te tree gets placed in the selected path
   options.splice(lane, 1);
   if (Math.random() > 0.5) {
@@ -901,11 +902,20 @@ const update = () => {
 
 
   //logica tijd/clock / releaseinterval
-    if (clock.getElapsedTime() > Math.random() * 3) {
-      addPathApple();
-      addPathBanana();
-      addPathOrange();
-      addPathGrapes();
+    if (clock.getElapsedTime() > .5) {
+      const random = 1 + Math.floor(Math.random() * 4);
+      if (random === 1 || random === 4) {
+        addPathApple();
+      }
+      if (random === 2 || random === 4) {
+        addPathBanana();
+      }
+      if (random === 3 || random === 2) {
+        addPathOrange();
+      }
+      if (random === 4 || random === 3) {
+        addPathGrapes();
+      }
       addPathTree();
       clock.start();
     }
