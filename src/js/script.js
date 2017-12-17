@@ -12,7 +12,6 @@ import Grapes from './objects/Grapes';
 import addPath from './lib/addPath';
 import createPool from './lib/createPool';
 import addWorldObjects from './lib/addWorldObjects';
-import doObjectLogic from './lib/doObjectLogic';
 import addFruits from './lib/addFruits';
 
 let sceneWidth, sceneHeight, scene, camera, renderer, dom, sun, game, startInterval;
@@ -40,18 +39,26 @@ let sphericalHelperApples, sphericalHelperBananas, sphericalHelperOranges, spher
 let clock;
 
 //music
-let polySynth, distortion;
+let polySynth, distortion, volume, pingPong;
 let totalMusic;
-let collisionApple;
+const toonApple = `C4`;
+const toonBanana = `A6`;
+const toonOrange = `B3`;
+const toonGrapes = `D4`;
+
+//collision
+let collisionObject;
+let lastCollObject = collisionObject;
 
 let startTime;
+
+
 
 //UI
 const replayMessage = document.querySelector(`.replay-button`);
 const playMessage = document.querySelector(`.start-button`);
 
 const resetGame = () => {
-
   game = {
     counter: 30,
     status: `start`
@@ -324,25 +331,29 @@ const tightenTree = (vertices, sides, currentTier) => {
 
 const createApple = () => {
   const apple = new Apple();
-  apple.mesh.scale.set(0.02, 0.02, 0.02);
+  const random = 0.005 + Math.random() * 0.03;
+  apple.mesh.scale.set(random, random, random);
   return apple;
 };
 
 const createBanana = () => {
   const banana = new Banana();
-  banana.mesh.scale.set(0.02, 0.02, 0.02);
+  const random = 0.005 + Math.random() * 0.03;
+  banana.mesh.scale.set(random, random, random);
   return banana;
 };
 
 const createOrange = () => {
   const orange = new Orange();
-  orange.mesh.scale.set(0.03, 0.03, 0.03);
+  const random = 0.005 + Math.random() * 0.03;
+  orange.mesh.scale.set(random, random, random);
   return orange;
 };
 
 const createGrapes = () => {
   const grapes = new Grapes();
-  grapes.mesh.scale.set(0.02, 0.02, 0.02);
+  const random = 0.005 + Math.random() * 0.03;
+  grapes.mesh.scale.set(random, random, random);
   return grapes;
 };
 
@@ -430,77 +441,38 @@ const doTreeLogic = () => {
 };
 
 const music = () => {
-
-  let oneApple;
-  const applePos = new THREE.Vector3();
-  applesInPath.forEach(function (element, index) {
-    oneApple = applesInPath[index];
-    applePos.setFromMatrixPosition(oneApple.mesh.matrixWorld);
-  });
-  distortion = new Tone.Distortion(1 + applePos.x / 4);
-  polySynth = new Tone.PolySynth(4, Tone.Synth).chain(distortion, Tone.Master);
+  pingPong = new Tone.PingPongDelay(`4n`, 0.2).toMaster();
+  volume = new Tone.Volume();
+  distortion = new Tone.Distortion();
+  polySynth = new Tone.Synth().connect(pingPong).chain(volume, distortion, Tone.Master);
 };
 
-const appleMusic = () => {
-  //polySynth = new Tone.PolySynth(4, Tone.Synth).chain(distortion, Tone.Master);
-  const sound = polySynth.triggerAttackRelease(`C4`, `8n`);
+
+const playMusic = (object, toon) => {
+  pingPong.delayTime.value = fly.mesh.position.y / 10 * 3;
+  volume.volume.value = object.mesh.scale.x * 500;
+  distortion.distortion = 1 + fly.mesh.position.x;
+  const sound = polySynth.triggerAttackRelease(toon, `8n`);
   const currentTime = new Date().getTime();
   const time = currentTime - startTime;
   const detail = {sound, time};
   totalMusic.push(detail);
 };
 
-const doAppleLogic = () => {
-  let oneApple;
-  const applePos = new THREE.Vector3();
-  const applesToRemove = [];
-  applesInPath.forEach(function (element, index) {
-    oneApple = applesInPath[index];
-    applePos.setFromMatrixPosition(oneApple.mesh.matrixWorld);
-    //distortion = new Tone.Distortion(1 + applePos.x / 4);
-    distortion.distortion = 1 + applePos.x / 4;
+let currentObject, currentToon;
 
-    if (applePos.z > 6 && oneApple.visible) {
-      applesToRemove.push(oneApple);
-    } else {
-
-      const firstBB = new THREE.Box3().setFromObject(fly.mesh);
-      const secondBB = new THREE.Box3().setFromObject(oneApple.mesh);
-      const collision = firstBB.intersectsBox(secondBB);
-      if (collision === true) {
-        collisionApple = true;
-      }
+const doLogic = (objectsInPath, toon) => {
+  const flyBox = new THREE.Box3().setFromObject(fly.mesh);
+  for (let i = 0;i < objectsInPath.length;i ++) {
+    const object = objectsInPath[i];
+    const objectBox = new THREE.Box3().setFromObject(object.mesh);
+    const collision = flyBox.intersectsBox(objectBox);
+    if (collision) {
+      collisionObject = true;
+      currentObject = object;
+      currentToon = toon;
     }
-  });
-
-  let fromWhere;
-  applesToRemove.forEach(function (element, index) {
-    oneApple = applesToRemove[index];
-    fromWhere = applesInPath.indexOf(oneApple);
-    applesInPath.splice(fromWhere, 1);
-    applesPool.push(oneApple);
-    oneApple.visible = false;
-  });
-};
-
-const doBananaLogic = () => {
-
-  // const botsendeBananen = bananasInPath.filter(banana => {
-  //   return true of false
-  //   true: de banaan botst
-  //   false: de banaan botst niet
-  // });
-  //
-  // console.log(botsendeBananen.length);
-  doObjectLogic(bananasInPath, `B3`, `8n`, bananasPool, fly, polySynth, startTime, totalMusic);
-};
-
-const doOrangeLogic = () => {
-  doObjectLogic(orangesInPath, `E4`, `8n`, orangesPool, fly, polySynth, startTime, totalMusic);
-};
-
-const doGrapesLogic = () => {
-  doObjectLogic(grapesInPath, `D6`, `16n`, grapesPool, fly, polySynth, startTime, totalMusic);
+  }
 };
 
 //this method is called from update when enought time has elapsed after planting the last tree
@@ -558,7 +530,25 @@ const updateFly = () => {
   if (fly.mesh.position.y <= 1.8) {
     fly.mesh.position.y = 1.9;
   }
+  //animeren vlieg
+  const leftWing = fly.mesh.children[3];
+  const rightWing = fly.mesh.children[4];
+  if (factor === 1) {
+    if (leftWing.rotation.x > Math.PI / 4) {
+      factor = - 1;
+    }
+  }
 
+  if (factor === - 1) {
+    if (leftWing.rotation.x < 0.1) {
+      factor = 1;
+    }
+  }
+
+  leftWing.rotation.x += 0.06 * factor;
+  leftWing.rotation.y += 0.01 * factor;
+  rightWing.rotation.x += 0.06 * factor;
+  rightWing.rotation.y -= 0.01 * factor;
 };
 
 const handleMouseMove = e => {
@@ -619,50 +609,14 @@ const hideReplay = () => {
   replayMessage.style.display = `none`;
 };
 
-// lastColl is standaard False
-let lastColl = collisionApple;
-
 const update = () => {
 
-
-  // if (collisionApple && lastColl === collisionApple) {
-
-  if (collisionApple && !lastColl) {
-    //lastColl = collisionApple;
-    console.log(`blob`);
-    appleMusic();
+  if (collisionObject && !lastCollObject) {
+    playMusic(currentObject, currentToon);
   }
 
-  lastColl = collisionApple;
-
-  collisionApple = false;
-
-
-  //
-  // if (collisionApple === true) {
-  //   appleMusic();
-  //   collisionApple = false;
-  // }
-
-
-  // CurrentColl wordt constant geupdate standaard ook False
-  // Totdat collsion = true dan wordt currentColl true
-  const currentColl = collisionApple;
-  // we checken of lastColl (van de vorige frame) gelijk is aan de huidige frame
-  // standaard is dat zo, als er een collision is niet en wordt de if uitgevoerd
-  if (currentColl !== lastColl) {
-    //console.log(`blob`);
-  }
-
-  // console.log(currentColl);
-
-  // zet de vorige frame terug naar false
-
-  // if (!currentColl) {
-  //   lastColl = currentColl;
-  // }
-  //
-  // lastColl = currentColl;
+  lastCollObject = collisionObject;
+  collisionObject = false;
 
   if (game.status === `playing`) {
   //wereld animeren
@@ -690,31 +644,10 @@ const update = () => {
 
   //bomen en fruit
     doTreeLogic();
-    doAppleLogic();
-    doBananaLogic();
-    doOrangeLogic();
-    doGrapesLogic();
-
-  //animeren vlieg
-    const leftWing = fly.mesh.children[3];
-    const rightWing = fly.mesh.children[4];
-
-    if (factor === 1) {
-      if (leftWing.rotation.x > Math.PI / 4) {
-        factor = - 1;
-      }
-    }
-
-    if (factor === - 1) {
-      if (leftWing.rotation.x < 0.1) {
-        factor = 1;
-      }
-    }
-
-    leftWing.rotation.x += 0.06 * factor;
-    leftWing.rotation.y += 0.01 * factor;
-    rightWing.rotation.x += 0.06 * factor;
-    rightWing.rotation.y -= 0.01 * factor;
+    doLogic(applesInPath, toonApple);
+    doLogic(grapesInPath, toonGrapes);
+    doLogic(orangesInPath, toonOrange);
+    doLogic(bananasInPath, toonBanana);
 
     updateFly();
   }
