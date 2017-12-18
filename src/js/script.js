@@ -42,9 +42,9 @@ let clock, clockMusic, time;
 let polySynth, distortion, volume, pingPong;
 let totalMusic;
 const toonApple = `C4`;
-const toonBanana = `A6`;
-const toonOrange = `B3`;
-const toonGrapes = `D4`;
+const toonBanana = `F3`;
+const toonOrange = `D3`;
+const toonGrapes = `E4`;
 
 //collision
 let flyBox;
@@ -56,11 +56,12 @@ const playMessage = document.querySelector(`.start-button`);
 
 const resetGame = () => {
   game = {
-    counter: 10,
+    counter: 20,
     status: `start`,
     fov: `nozoom`,
     fly: `flying`,
-    rolling: `normal`
+    rolling: `normal`,
+    music: `nomusic`
   };
   clearInterval(startInterval);
   removeScene();
@@ -398,19 +399,19 @@ const addTree = (inPath, row, isLeft) => {
 };
 
 const addApple = (inPath, row, isLeft) => {
-  addFruits(inPath, row, isLeft, applesPool, applesInPath, sphericalHelperApples, worldRadius, - .4, Math.random() * 1.5, fruitPathAngleValues, rollingGroundSphere, createApple, .7, Math.random() * 1.5);
+  addFruits(inPath, row, isLeft, applesPool, applesInPath, sphericalHelperApples, worldRadius, - .4, Math.random() * 1, fruitPathAngleValues, rollingGroundSphere, createApple, .7, Math.random() * 1.5);
 };
 
 const addBanana = (inPath, row, isLeft) => {
-  addFruits(inPath, row, isLeft, bananasPool, bananasInPath, sphericalHelperBananas, worldRadius, - .1, 0, fruitPathAngleValues, rollingGroundSphere, createBanana, .3, 0);
+  addFruits(inPath, row, isLeft, bananasPool, bananasInPath, sphericalHelperBananas, worldRadius, - .1, Math.random() * 1, fruitPathAngleValues, rollingGroundSphere, createBanana, .3, 0);
 };
 
 const addOrange = (inPath, row, isLeft) => {
-  addFruits(inPath, row, isLeft, orangesPool, orangesInPath, sphericalHelperOranges, worldRadius, .1, Math.random() * 1.2, fruitPathAngleValues, rollingGroundSphere, createOrange, .7, Math.random() * 1.5);
+  addFruits(inPath, row, isLeft, orangesPool, orangesInPath, sphericalHelperOranges, worldRadius, .1, Math.random() * 1, fruitPathAngleValues, rollingGroundSphere, createOrange, .7, Math.random() * 1.5);
 };
 
 const addGrapes = (inPath, row, isLeft) => {
-  addFruits(inPath, row, isLeft, grapesPool, grapesInPath, sphericalHelperGrapes, worldRadius, - .3, Math.random() * 1.5, fruitPathAngleValues, rollingGroundSphere, createGrapes, .7, Math.random() * 1.5);
+  addFruits(inPath, row, isLeft, grapesPool, grapesInPath, sphericalHelperGrapes, worldRadius, - .3, Math.random() * 1, fruitPathAngleValues, rollingGroundSphere, createGrapes, .7, Math.random() * 1.5);
 };
 
 //it returns the tree to the pool once it goes out of view
@@ -444,16 +445,33 @@ const music = () => {
   pingPong = new Tone.PingPongDelay(`4n`, 0.2).toMaster();
   volume = new Tone.Volume();
   distortion = new Tone.Distortion();
-  polySynth = new Tone.Synth().connect(pingPong).chain(volume, distortion, Tone.Master);
+  polySynth = new Tone.Synth(
+    {
+      oscillator:
+      {
+        type: `pwm`,
+        modulationType: `fat`,
+        modulationIndex: .5,
+        harmonicity: 20
+      },
+      envelope: {
+        attack: 0.001,
+        decay: 0.1,
+        sustain: 0.1,
+        release: 0.8
+      }
+    }
+  ).connect(pingPong).chain(volume, distortion, Tone.Master);
 };
 
 
 const playMusic = (object, toon) => {
-  pingPong.delayTime.value = fly.mesh.position.y / 10 * 3;
+  pingPong.delayTime.value = fly.mesh.position.y / 10 * .5;
   volume.volume.value = object.mesh.scale.x * 500;
   distortion.distortion = 1 + fly.mesh.position.x;
-  polySynth.triggerAttackRelease(toon, `8n`);
-  const clock = (Math.round(time.getElapsedTime() * 10) / 10);
+  polySynth.triggerAttackRelease(toon, `4n`);
+  //const clock = (Math.round(time.getElapsedTime() * 10) / 10);
+  const clock = Math.round((time.getElapsedTime() - 4) * 10) / 10;
   const currentDistortion = distortion.distortion;
   const currentVolume = volume.volume.value;
   const currentPingPong = pingPong.delayTime.value;
@@ -578,7 +596,7 @@ const handleReplayClicked = () => {
 const endGame = () => {
   document.querySelector(`.counter`).innerHTML = ``;
   hidePlay();
-  game.status = `waitingreplay`;
+  game.music = `music`;
   game.fov = `zoom`;
   game.rolling = `reverse`;
   game.fly = `not flying`;
@@ -598,7 +616,7 @@ const updateCounter = () => {
 const handlePlaySong = () => {
   if (totalMusic.length > 0) {
     clockMusic.start();
-    if (game.status === `waitingreplay`) {
+    if (game.music === `music`) {
       endMusic();
     }
   }
