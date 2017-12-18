@@ -1,0 +1,6 @@
+@font-face {
+  font-family: 'acids';
+  src:
+    url(Acids.woff2) format('woff2'),
+    url(Acids.woff) format('woff');
+}

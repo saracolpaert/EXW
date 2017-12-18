@@ -1,0 +1,6 @@
+@font-face {
+  font-family: 'smilingcat';
+  src:
+    url(smilingcat.woff2) format('woff2'),
+    url(smilingcat.woff) format('woff');
+}

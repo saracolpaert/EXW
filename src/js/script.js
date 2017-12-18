@@ -47,34 +47,35 @@ const toonOrange = `B3`;
 const toonGrapes = `D4`;
 
 //collision
+let flyBox;
 let collisionObject;
 let lastCollObject = collisionObject;
 
 let startTime;
 
-
-
 //UI
-const replayMessage = document.querySelector(`.replay-button`);
 const playMessage = document.querySelector(`.start-button`);
 
 const resetGame = () => {
   game = {
     counter: 30,
-    status: `start`
+    status: `start`,
+    fov: `nozoom`,
+    fly: `flying`,
+    rolling: `normal`
   };
   clearInterval(startInterval);
-  hideReplay();
   removeScene();
-
+  hideReplay();
   dom = document.querySelector(`.world`);
   const counter = document.createElement(`h1`);
   dom.appendChild(counter);
-  counter.setAttribute(`id`, `counter`);
+  counter.setAttribute(`class`, `counter`);
 
+  const endButtons = document.querySelector(`.end-buttons`);
   const replay = document.createElement(`button`);
-  dom.appendChild(replay);
-  replay.innerHTML = `replay`;
+  endButtons.appendChild(replay);
+  replay.innerHTML = `play again`;
   replay.className = `replay-button`;
   replay.setAttribute(`id`, `replay`);
   replay.style.display = `none`;
@@ -107,7 +108,7 @@ const createScene = () => {
   treesPool = [];
   sphericalHelper = new THREE.Spherical();
   //angle values for each path on the sphere
-  pathAngleValues = [1.52, 1.62];
+  pathAngleValues = [1.51, 1.64];
 
   //fruitPathAngleValues
   fruitPathAngleValues = [1.52, 1.53, 1.54, 1.55, 1.56, 1.57, 1.58, 1.59, 1.60, 1.61, 1.62];
@@ -193,7 +194,7 @@ const addWorld = () => {
   let offset = new THREE.Vector3();
   let lerpValue = 0.5;
   let heightValue;
-  const maxHeight = 0.7;
+  const maxHeight = 0;
 
   for (let j = 1;j < tiers - 50;j ++) { // - 20
     currentTier = j;
@@ -398,11 +399,11 @@ const addTree = (inPath, row, isLeft) => {
 };
 
 const addApple = (inPath, row, isLeft) => {
-  addFruits(inPath, row, isLeft, applesPool, applesInPath, sphericalHelperApples, worldRadius, - .7, Math.random() * 1.5, fruitPathAngleValues, rollingGroundSphere, createApple, .7, Math.random() * 1.5);
+  addFruits(inPath, row, isLeft, applesPool, applesInPath, sphericalHelperApples, worldRadius, - .4, Math.random() * 1.5, fruitPathAngleValues, rollingGroundSphere, createApple, .7, Math.random() * 1.5);
 };
 
 const addBanana = (inPath, row, isLeft) => {
-  addFruits(inPath, row, isLeft, bananasPool, bananasInPath, sphericalHelperBananas, worldRadius, - 0.3, 0, fruitPathAngleValues, rollingGroundSphere, createBanana, .3, 0);
+  addFruits(inPath, row, isLeft, bananasPool, bananasInPath, sphericalHelperBananas, worldRadius, - .1, 0, fruitPathAngleValues, rollingGroundSphere, createBanana, .3, 0);
 };
 
 const addOrange = (inPath, row, isLeft) => {
@@ -410,7 +411,7 @@ const addOrange = (inPath, row, isLeft) => {
 };
 
 const addGrapes = (inPath, row, isLeft) => {
-  addFruits(inPath, row, isLeft, grapesPool, grapesInPath, sphericalHelperGrapes, worldRadius, - 0.3, Math.random() * 1.5, fruitPathAngleValues, rollingGroundSphere, createGrapes, .7, Math.random() * 1.5);
+  addFruits(inPath, row, isLeft, grapesPool, grapesInPath, sphericalHelperGrapes, worldRadius, - .3, Math.random() * 1.5, fruitPathAngleValues, rollingGroundSphere, createGrapes, .7, Math.random() * 1.5);
 };
 
 //it returns the tree to the pool once it goes out of view
@@ -462,7 +463,7 @@ const playMusic = (object, toon) => {
 let currentObject, currentToon;
 
 const doLogic = (objectsInPath, toon) => {
-  const flyBox = new THREE.Box3().setFromObject(fly.mesh);
+  flyBox = new THREE.Box3().setFromObject(fly.mesh);
   for (let i = 0;i < objectsInPath.length;i ++) {
     const object = objectsInPath[i];
     const objectBox = new THREE.Box3().setFromObject(object.mesh);
@@ -558,7 +559,7 @@ const handleMouseMove = e => {
 };
 
 const handleStartClicked = () => {
-  document.getElementById(`counter`).innerHTML = game.counter;
+  document.querySelector(`.counter`).innerHTML = game.counter;
   game.status = `playing`;
   hidePlay();
   startInterval = setInterval(updateCounter, 1000);
@@ -566,31 +567,24 @@ const handleStartClicked = () => {
 
 const handleReplayClicked = () => {
   resetGame();
-  document.getElementById(`counter`).innerHTML = game.counter;
+  document.querySelector(`.counter`).innerHTML = game.counter;
   game.status = `playing`;
   startInterval = setInterval(updateCounter, 1000);
 };
 
 const endGame = () => {
-  document.getElementById(`counter`).innerHTML = `end game`;
+  document.querySelector(`.counter`).innerHTML = ``;
   hidePlay();
-  showReplay();
-  game.status = `waitingreplay`;
-  for (let i = scene.children.length - 1;i >= 0;i --) {
-    if (scene.children[i].type === `Mesh`)
-      scene.remove(scene.children[i]);
-  }
-  // totalMusic.forEach(sound => {
-  //   console.log(sound);
-  //   // sound.sound.triggerAttackRelease;
-  // });
+  game.fov = `zoom`;
+  game.rolling = `reverse`;
+  game.fly = `not flying`;
 };
 
 const updateCounter = () => {
   if (game.counter > 0) {
     game.counter --;
-    document.getElementById(`counter`).innerHTML = game.counter;
-    hideReplay();
+    document.querySelector(`.counter`).innerHTML = game.counter;
+    //hideReplay();
   } else if (game.counter === 0) {
     endGame();
   }
@@ -602,11 +596,12 @@ const hidePlay = () => {
 };
 
 const showReplay = () => {
-  document.getElementById(`replay`).style.display = `flex`;
+  document.querySelector(`.end-game`).style.display = `block`;
+  document.getElementById(`replay`).style.display = `block`;
 };
 
 const hideReplay = () => {
-  replayMessage.style.display = `none`;
+  document.querySelector(`.end-game`).style.display = `none`;
 };
 
 const update = () => {
@@ -619,9 +614,13 @@ const update = () => {
   collisionObject = false;
 
   if (game.status === `playing`) {
-  //wereld animeren
-    rollingGroundSphere.rotation.x += rollingSpeed;
 
+    if (game.rolling === `normal`) {
+  //wereld animeren
+      rollingGroundSphere.rotation.x += rollingSpeed;
+    } else {
+      rollingGroundSphere.rotation.x -= rollingSpeed;
+    }
 
   //logica tijd/clock / releaseinterval
     if (clock.getElapsedTime() > .5) {
@@ -649,12 +648,27 @@ const update = () => {
     doLogic(orangesInPath, toonOrange);
     doLogic(bananasInPath, toonBanana);
 
-    updateFly();
+    if (game.fly === `flying`) {
+      updateFly();
+    }
   }
+  //uitzoomen wereld
+  if (game.fov === `zoom` && camera.fov <= 100) {
+    camera.fov += .8;
+    camera.position.y += .02;
+    camera.updateProjectionMatrix();
+    if (camera.fov === 100.79999999999978) {
+      console.log(`volledig uitgezoomd`);
+      fly.mesh.position.set(0, 0, 0);
+      showReplay();
+    }
+  }
+  //console.log(camera.fov);
 
   render();
   requestAnimationFrame(update);
 };
+
 
 const render = () => {
   renderer.render(scene, camera);

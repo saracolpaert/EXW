@@ -7,25 +7,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script>
 
-    // https://github.com/typekit/webfontloader/blob/master/README.md
-    WebFontConfig = {
-      google: {
-        families: ['Roboto']
-      }
-      /*
-      custom: {
-        families: ['My Font', 'My Other Font:n4,i4,n7'],
-        urls: ['/fonts.css']
-      }
-      */
-    };
+  // https://github.com/typekit/webfontloader/blob/master/README.md
+  WebFontConfig = {
+  // google: {
+  //   families: ['Roboto']
+  // }
 
-    (function(d) {
-      var wf = d.createElement('script'), s = d.scripts[0];
-      wf.async = true;
-      wf.src = 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js';
-      s.parentNode.insertBefore(wf, s);
-    })(document);
+  custom: {
+    families: ['smilingcat', 'acids'],
+    urls: ['assets/fonts/smilingcat/smilingcat.css', 'assets/fonts/acids/acids.css']
+  }
+
+};
+
+(function(d) {
+  var wf = d.createElement('script'), s = d.scripts[0];
+  wf.async = true;
+  //wf.src = 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js';
+  wf.src = 'js/webfontloader.js';
+  s.parentNode.insertBefore(wf, s);
+})(document);
 
   </script>
 
@@ -37,9 +38,15 @@
       <p class="explanation-game"> Catch different kinds of fruit for 1 minute and create your own song! </p>
       <button type="button" name="button" class="start-button">Play</button>
   </div>
+  <div class="end-game">
+    <h1 class="title-end"> Journey ended </h1>
+    <p class="explanation-end"> Now play the song you made or play again </p>
+    <div class="end-buttons">
+      <button type="button" name="button" class="playsong-button">Play song </button>
+    </div>
+  </div>
   <div class="world">
-    <h1 id="counter"></h1>
-    <button type="button" name="button" class="replay-button">Replay</button>
+    <h1 class="counter"></h1>
   </div>
 </body>
 
