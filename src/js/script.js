@@ -36,7 +36,7 @@ let fruitPathAngleValues;
 let applesPool, applesInPath, bananasPool, bananasInPath, orangesPool, orangesInPath, grapesPool, grapesInPath;
 let sphericalHelperApples, sphericalHelperBananas, sphericalHelperOranges, sphericalHelperGrapes;
 
-let clock;
+let clock, clockMusic, time;
 
 //music
 let polySynth, distortion, volume, pingPong;
@@ -51,14 +51,12 @@ let flyBox;
 let collisionObject;
 let lastCollObject = collisionObject;
 
-let startTime;
-
 //UI
 const playMessage = document.querySelector(`.start-button`);
 
 const resetGame = () => {
   game = {
-    counter: 30,
+    counter: 10,
     status: `start`,
     fov: `nozoom`,
     fly: `flying`,
@@ -80,6 +78,8 @@ const resetGame = () => {
   replay.setAttribute(`id`, `replay`);
   replay.style.display = `none`;
   replay.addEventListener(`click`, handleReplayClicked);
+  const playSong = document.querySelector(`.playsong-button`);
+  playSong.addEventListener(`click`, handlePlaySong);
   createScene();
   createFly();
   music();
@@ -135,10 +135,9 @@ const createScene = () => {
 
 
   //clock starten
+  time = new THREE.Clock();
   clock = new THREE.Clock();
-  //clock.start();
-  const d = new Date();
-  startTime = d.getTime();
+  clockMusic = new THREE.Clock();
 
   sceneWidth = window.innerWidth;
   sceneHeight = window.innerHeight;
@@ -453,10 +452,12 @@ const playMusic = (object, toon) => {
   pingPong.delayTime.value = fly.mesh.position.y / 10 * 3;
   volume.volume.value = object.mesh.scale.x * 500;
   distortion.distortion = 1 + fly.mesh.position.x;
-  const sound = polySynth.triggerAttackRelease(toon, `8n`);
-  const currentTime = new Date().getTime();
-  const time = currentTime - startTime;
-  const detail = {sound, time};
+  polySynth.triggerAttackRelease(toon, `8n`);
+  const clock = (Math.round(time.getElapsedTime() * 10) / 10);
+  const currentDistortion = distortion.distortion;
+  const currentVolume = volume.volume.value;
+  const currentPingPong = pingPong.delayTime.value;
+  const detail = {toon, clock, currentDistortion, currentVolume, currentPingPong};
   totalMusic.push(detail);
 };
 
@@ -559,6 +560,7 @@ const handleMouseMove = e => {
 };
 
 const handleStartClicked = () => {
+  time.start();
   document.querySelector(`.counter`).innerHTML = game.counter;
   game.status = `playing`;
   hidePlay();
@@ -567,6 +569,7 @@ const handleStartClicked = () => {
 
 const handleReplayClicked = () => {
   resetGame();
+  time.start();
   document.querySelector(`.counter`).innerHTML = game.counter;
   game.status = `playing`;
   startInterval = setInterval(updateCounter, 1000);
@@ -575,6 +578,7 @@ const handleReplayClicked = () => {
 const endGame = () => {
   document.querySelector(`.counter`).innerHTML = ``;
   hidePlay();
+  game.status = `waitingreplay`;
   game.fov = `zoom`;
   game.rolling = `reverse`;
   game.fly = `not flying`;
@@ -586,8 +590,37 @@ const updateCounter = () => {
     document.querySelector(`.counter`).innerHTML = game.counter;
     //hideReplay();
   } else if (game.counter === 0) {
+    time.stop();
     endGame();
   }
+};
+
+const handlePlaySong = () => {
+  if (totalMusic.length > 0) {
+    clockMusic.start();
+    if (game.status === `waitingreplay`) {
+      endMusic();
+    }
+  }
+};
+
+const endMusic = () => {
+  const currentTime = (Math.round(clockMusic.getElapsedTime() * 10) / 10);
+  totalMusic.forEach((sound, index) => {
+    if (currentTime === sound.clock) {
+      console.log(sound.clock);
+      distortion.distortion = sound.currentDistortion;
+      volume.volume.value = sound.currentVolume;
+      pingPong.delayTime.value = sound.currentPingPong;
+      polySynth.triggerAttackRelease(sound.toon, `8n`);
+      totalMusic.splice(index, 1);
+    }
+  });
+  if (totalMusic.length === 0) {
+    clockMusic.stop();
+    cancelAnimationFrame(endMusic);
+  }
+  requestAnimationFrame(endMusic);
 };
 
 const hidePlay = () => {
