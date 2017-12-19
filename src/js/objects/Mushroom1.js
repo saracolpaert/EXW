@@ -16,7 +16,6 @@ export default class Mushroom1 {
     const materialB = new THREE.MeshPhongMaterial({color: 0xeef2e1, flatShading: true});
     const cylinder = new THREE.Mesh(geometryB, materialB);
 
-
     cylinder.position.set(0, 2, 0);
     this.mesh.add(cylinder);
   }

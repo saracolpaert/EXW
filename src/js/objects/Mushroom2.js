@@ -12,12 +12,12 @@ export default class Mushroom2 {
 
     head.scale.y = 3;
     head.scale.x = 1.5;
-    head.position.set(0, 10, 0);
+    head.position.set(0, 7, 0);
 
     const geometryB = new THREE.CylinderGeometry(.5, .5, 10, 16);
     const materialB = new THREE.MeshPhongMaterial({color: 0xeef2e1, flatShading: true});
     const cylinder = new THREE.Mesh(geometryB, materialB);
-    cylinder.position.set(0, 6, 0);
+    cylinder.position.set(0, 5, 0);
 
     this.mesh.add(cylinder);
   }
