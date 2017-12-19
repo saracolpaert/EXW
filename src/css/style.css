@@ -5,6 +5,7 @@ html {
   background-color: var(--bg-color);
   font-family: smilingcat;
   text-align: center;
+  color: var(--blauw);
 }
 
 h1 {
@@ -12,16 +13,19 @@ h1 {
 }
 
 .start-game {
-  background-color: rgba(255, 255, 255, .6);
+  background-color: rgba(255, 255, 255, .75);
   width: 100%;
   height: 100%;
   position: absolute;
+  z-index: 2;
 }
 
 .end-game {
   width: 100%;
   height: 100%;
   position: absolute;
+  background-color: rgba(255, 255, 255, .5);
+  z-index: 3;
 }
 
 .end-buttons {
@@ -31,39 +35,36 @@ h1 {
   text-align: center;
   margin: 0 auto;
   margin-top: 1rem;
+  z-index: 3;
 }
 
 .title-game {
   font-family: smilingcat;
   font-size: 8rem;
-  color: #4cd2ff;
   text-transform: uppercase;
   padding-top: 20rem;
 }
 
 .title-end {
   font-size: 8rem;
-  color: #4cd2ff;
   padding-top: 12rem;
 }
 
 .explanation-game {
   font-size: 2.7rem;
-  color: #4cd2ff;
   margin-top: 3rem;
 }
 
 .explanation-end {
   font-size: 3rem;
-  color: #4cd2ff;
   margin-top: 3rem;
 }
 
 .start-button {
   margin-top: 5rem;
-  border: #4cd2ff;
+  border: var(--blauw);
   border-radius: 1.5rem;
-  background-color: #4cd2ff;
+  background-color: var(--blauw);
   color: white;
   width: 18rem;
   height: 5.5rem;
@@ -74,9 +75,9 @@ h1 {
 }
 
 .replay-button {
-  border: #4cd2ff;
+  border: var(--blauw);
   border-radius: 1.5rem;
-  background-color: #4cd2ff;
+  background-color: var(--blauw);
   color: white;
   width: 18rem;
   height: 5.5rem;
@@ -106,13 +107,13 @@ h1 {
 .start-button:hover {
   outline: 0;
   background-color: white;
-  color: #4cd2ff;
+  color: var(--blauw);
 }
 
 .replay-button:hover {
   outline: 0;
   background-color: white;
-  color: #4cd2ff;
+  color: var(--blauw);
 }
 
 .playsong-button:hover {
@@ -123,7 +124,6 @@ h1 {
 
 .not-active {
   background-color: white;
-  color: #4cd2ff;
 }
 
 .active {
@@ -133,8 +133,11 @@ h1 {
 }
 
 .counter {
-  color: #4cd2ff;
   font-size: 5rem;
   padding-top: 1rem;
   font-family: acids;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 1;
 }
