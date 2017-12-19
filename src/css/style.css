@@ -70,6 +70,7 @@ h1 {
   font-size: 3rem;
   text-transform: uppercase;
   font-family: smilingcat;
+  outline: 0;
 }
 
 .replay-button {
@@ -84,6 +85,7 @@ h1 {
   font-family: smilingcat;
   margin: 0 auto;
   margin-top: 5rem;
+  outline: 0;
 }
 
 .playsong-button {
@@ -98,21 +100,36 @@ h1 {
   font-family: smilingcat;
   margin: 0 auto;
   margin-top: 5rem;
+  outline: 0;
 }
 
 .start-button:hover {
+  outline: 0;
   background-color: white;
   color: #4cd2ff;
 }
 
 .replay-button:hover {
+  outline: 0;
   background-color: white;
   color: #4cd2ff;
 }
 
 .playsong-button:hover {
+  outline: 0;
   background-color: white;
   color: #1ab415;
+}
+
+.not-active {
+  background-color: white;
+  color: #4cd2ff;
+}
+
+.active {
+  background-color: #f2e85c;
+  color: white;
+
 }
 
 .counter {
