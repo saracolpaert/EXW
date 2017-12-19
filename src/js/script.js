@@ -90,6 +90,7 @@ let lastCollObject = collisionObject;
 
 //UI
 const playMessage = document.querySelector(`.start-button`);
+const playSong = document.querySelector(`.playsong-button`);
 
 const resetGame = () => {
   game = {
@@ -116,7 +117,6 @@ const resetGame = () => {
   replay.setAttribute(`id`, `replay`);
   replay.style.display = `none`;
   replay.addEventListener(`click`, handleReplayClicked);
-  const playSong = document.querySelector(`.playsong-button`);
   playSong.addEventListener(`click`, handlePlaySong);
   createScene();
   createFly();
@@ -1137,6 +1137,18 @@ const handlePlaySong = () => {
     pingPong.delayTime.value = value.pingPong;
     polySynth.triggerAttackRelease(value.note, `8n`, time);
   }, notes).start();
+
+  playSong.classList.toggle(`active`);
+  if (playSong.classList.contains(`active`)) {
+    playSong.innerHTML = `Pause song`;
+    Tone.Transport.start();
+  }
+
+  if (!playSong.classList.contains(`active`)) {
+    playSong.innerHTML = `Play song`;
+    Tone.Transport.pause();
+  }
+
 };
 
 const endGame = () => {
