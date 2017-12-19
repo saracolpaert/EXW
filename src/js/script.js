@@ -7,6 +7,16 @@ import Apple from './objects/Apple';
 import Banana from './objects/Banana';
 import Orange from './objects/Orange';
 import Grapes from './objects/Grapes';
+import Mushroom1 from './objects/Mushroom1';
+import Mushroom2 from './objects/Mushroom2';
+import Mushroom3 from './objects/Mushroom3';
+import Rups from './objects/Rups';
+import Tak1 from './objects/Tak1';
+import Tak2 from './objects/Tak2';
+import Tak3 from './objects/Tak3';
+import Tak4 from './objects/Tak4';
+import Tak5 from './objects/Tak5';
+
 
 //functions
 import addPath from './lib/addPath';
@@ -26,15 +36,43 @@ const worldRadius = 26;
 let rollingGroundSphere;
 const rollingSpeed = 0.003;
 
-//bomen
-let treesPool, treesInPath;
-let sphericalHelper, pathAngleValues;
-let vertexIndex, vertexVector, midPointVector, offset;
+//mushrooms
+let mushroomPool, mushroomsInPath;
+let sphericalHelperMushrooms;
+let pathAngleValuesMushrooms;
+
+let mushroomPool2, mushroomsInPath2;
+let sphericalHelperMushrooms2, pathAngleValuesMushrooms2;
+
+let mushroomPool3, mushroomsInPath3;
+let sphericalHelperMushrooms3, pathAngleValuesMushrooms3;
+
+//Rups
+let rupsPool, rupsInPath;
+let sphericalHelperRups, pathAngleValuesRups;
+
+//takken
+let takPool, takInPath;
+let sphericalHelperTak, pathAngleValuesTak;
+
+let takPool2, takInPath2;
+let sphericalHelperTak2, pathAngleValuesTak2;
+
+let takPool3, takInPath3;
+let sphericalHelperTak3, pathAngleValuesTak3;
+
+let takPool4, takInPath4;
+let sphericalHelperTak4, pathAngleValuesTak4;
+
+let takPool5, takInPath5;
+let sphericalHelperTak5, pathAngleValuesTak5;
+
 
 //fruits
 let fruitPathAngleValues;
 let applesPool, applesInPath, bananasPool, bananasInPath, orangesPool, orangesInPath, grapesPool, grapesInPath;
 let sphericalHelperApples, sphericalHelperBananas, sphericalHelperOranges, sphericalHelperGrapes;
+
 
 let clock, clockMusic, time;
 
@@ -56,7 +94,7 @@ const playMessage = document.querySelector(`.start-button`);
 
 const resetGame = () => {
   game = {
-    counter: 20,
+    counter: 60,
     status: `start`,
     fov: `nozoom`,
     fly: `flying`,
@@ -104,12 +142,55 @@ const createScene = () => {
 
   totalMusic = [];
 
-  //bomen
-  treesInPath = [];
-  treesPool = [];
-  sphericalHelper = new THREE.Spherical();
-  //angle values for each path on the sphere
-  pathAngleValues = [1.51, 1.64];
+  //mushrooms
+  mushroomPool = [];
+  mushroomsInPath = [];
+  sphericalHelperMushrooms = new THREE.Spherical();
+  pathAngleValuesMushrooms = [1.58, 1.59, 1.60, 1.61, 1.62];
+
+  //mushrooms2
+  mushroomPool2 = [];
+  mushroomsInPath2 = [];
+  sphericalHelperMushrooms2 = new THREE.Spherical();
+  pathAngleValuesMushrooms2 = [1.52, 1.53, 1.54, 1.55, 1.56];
+
+  //mushrooms3
+  mushroomPool3 = [];
+  mushroomsInPath3 = [];
+  sphericalHelperMushrooms3 = new THREE.Spherical();
+  pathAngleValuesMushrooms3 = [1.56, 1.57, 1.58, 1.59, 1.60];
+
+  //rups
+  rupsPool = [];
+  rupsInPath = [];
+  sphericalHelperRups = new THREE.Spherical();
+  pathAngleValuesRups = [1.56, 1.57];
+
+  //takken
+  takPool = [];
+  takInPath = [];
+  sphericalHelperTak = new THREE.Spherical();
+  pathAngleValuesTak = [1.56, 1.57, 1.58];
+
+  takPool2 = [];
+  takInPath2 = [];
+  sphericalHelperTak2 = new THREE.Spherical();
+  pathAngleValuesTak2 = [1.56, 1.57, 1.58];
+
+  takPool3 = [];
+  takInPath3 = [];
+  sphericalHelperTak3 = new THREE.Spherical();
+  pathAngleValuesTak3 = [1.56, 1.57, 1.58];
+
+  takPool4 = [];
+  takInPath4 = [];
+  sphericalHelperTak4 = new THREE.Spherical();
+  pathAngleValuesTak4 = [1.56, 1.57, 1.58];
+
+  takPool5 = [];
+  takInPath5 = [];
+  sphericalHelperTak5 = new THREE.Spherical();
+  pathAngleValuesTak5 = [1.56, 1.57, 1.58];
 
   //fruitPathAngleValues
   fruitPathAngleValues = [1.52, 1.53, 1.54, 1.55, 1.56, 1.57, 1.58, 1.59, 1.60, 1.61, 1.62];
@@ -174,6 +255,7 @@ const createScene = () => {
   createPools();
   addWorld();
   addLight();
+
 };
 
 const addWorld = () => {
@@ -245,89 +327,73 @@ const addLight = () => {
 
 // extra objecten buiten diegene die worden aangemaak in addWorldTrees voor het begin
 const createPools = () => {
-  createPool(createTree, treesPool);
   createPool(createApple, applesPool);
   createPool(createBanana, bananasPool);
   createPool(createOrange, orangesPool);
   createPool(createGrapes, grapesPool);
+  createPool(createMushroom, mushroomPool);
+  createPool(createMushroom2, mushroomPool2);
+  createPool(createMushroom3, mushroomPool3);
+  createPool(createRups, rupsPool);
+  createPool(createTak, takPool);
+  createPool(createTak2, takPool2);
+  createPool(createTak3, takPool3);
+  createPool(createTak4, takPool4);
+  createPool(createTak5, takPool5);
 };
 
-const createTree = () => {
-
-  const sides = 8;
-  const tiers = 6;
-  const scalarMultiplier = (Math.random() * (0.25 - 0.1)) + 0.05;
-  midPointVector = new THREE.Vector3();
-  vertexVector = new THREE.Vector3();
-  const treeGeometry = new THREE.ConeGeometry(0.5, 1, sides, tiers);
-  const treeMaterial = new THREE.MeshStandardMaterial({color: 0x33ff33, flatShading: true});
-  midPointVector = treeGeometry.vertices[0].clone();
-  blowUpTree(treeGeometry.vertices, sides, 0, scalarMultiplier);
-  tightenTree(treeGeometry.vertices, sides, 1);
-  blowUpTree(treeGeometry.vertices, sides, 2, scalarMultiplier * 1.1, true);
-  tightenTree(treeGeometry.vertices, sides, 3);
-  blowUpTree(treeGeometry.vertices, sides, 4, scalarMultiplier * 1.2);
-  tightenTree(treeGeometry.vertices, sides, 5);
-  const treeTop = new THREE.Mesh(treeGeometry, treeMaterial);
-  treeTop.castShadow = true;
-  treeTop.receiveShadow = false;
-  treeTop.position.y = 0.9;
-  treeTop.rotation.y = (Math.random() * (Math.PI));
-  const treeTrunkGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.5);
-  const trunkMaterial = new THREE.MeshStandardMaterial({color: 0x886633, flatShading: true});
-  const treeTrunk = new THREE.Mesh(treeTrunkGeometry, trunkMaterial);
-  treeTrunk.position.y = 0.25;
-  const tree = new THREE.Object3D();
-  tree.add(treeTrunk);
-  tree.add(treeTop);
-  return tree;
+const createMushroom = () => {
+  const mushroom = new Mushroom1();
+  mushroom.mesh.scale.set(.6, .6, .6);
+  return mushroom;
 };
 
-//used to expand the alternative ring of vertices outwards
-const blowUpTree = (vertices, sides, currentTier, scalarMultiplier, odd) => {
-  vertexVector = new THREE.Vector3();
-  midPointVector = vertices[0].clone();
-  for (let i = 0;i < sides;i ++) {
-    vertexIndex = (currentTier * sides) + 1;
-    vertexVector = vertices[i + vertexIndex].clone();
-    midPointVector.y = vertexVector.y;
-    offset = vertexVector.sub(midPointVector);
-    if (odd) {
-      if (i % 2 === 0) {
-        offset.normalize().multiplyScalar(scalarMultiplier / 6);
-        vertices[i + vertexIndex].add(offset);
-      } else {
-        offset.normalize().multiplyScalar(scalarMultiplier);
-        vertices[i + vertexIndex].add(offset);
-        vertices[i + vertexIndex].y = vertices[i + vertexIndex + sides].y + 0.05;
-      }
-    } else {
-      if (i % 2 !== 0) {
-        offset.normalize().multiplyScalar(scalarMultiplier / 6);
-        vertices[i + vertexIndex].add(offset);
-      } else {
-        offset.normalize().multiplyScalar(scalarMultiplier);
-        vertices[i + vertexIndex].add(offset);
-        vertices[i + vertexIndex].y = vertices[i + vertexIndex + sides].y + 0.05;
-      }
-    }
-  }
+const createMushroom2 = () => {
+  const mushroom2 = new Mushroom2();
+  mushroom2.mesh.scale.set(.2, .2, .2);
+  return mushroom2;
 };
 
-//used to shrink down the next ring of vertices
-const tightenTree = (vertices, sides, currentTier) => {
-  let vertexIndex;
-  let vertexVector = new THREE.Vector3();
-  const midPointVector = vertices[0].clone();
-  let offset;
-  for (let i = 0;i < sides;i ++) {
-    vertexIndex = (currentTier * sides) + 1;
-    vertexVector = vertices[i + vertexIndex].clone();
-    midPointVector.y = vertexVector.y;
-    offset = vertexVector.sub(midPointVector);
-    offset.normalize().multiplyScalar(0.06);
-    vertices[i + vertexIndex].sub(offset);
-  }
+const createMushroom3 = () => {
+  const mushroom3 = new Mushroom3();
+  mushroom3.mesh.scale.set(.6, .6, .6);
+  return mushroom3;
+};
+
+const createRups = () => {
+  const rups = new Rups();
+  rups.mesh.scale.set(.01, .01, .01);
+  return rups;
+};
+
+const createTak = () => {
+  const tak = new Tak1();
+  tak.mesh.scale.set(.09, .09, .09);
+  return tak;
+};
+
+const createTak2 = () => {
+  const tak2 = new Tak2();
+  tak2.mesh.scale.set(.09, .09, .09);
+  return tak2;
+};
+
+const createTak3 = () => {
+  const tak3 = new Tak3();
+  tak3.mesh.scale.set(.09, .09, .09);
+  return tak3;
+};
+
+const createTak4 = () => {
+  const tak4 = new Tak4();
+  tak4.mesh.scale.set(.09, .09, .09);
+  return tak4;
+};
+
+const createTak5 = () => {
+  const tak5 = new Tak5();
+  tak5.mesh.scale.set(.09, .09, .09);
+  return tak5;
 };
 
 const createApple = () => {
@@ -358,45 +424,287 @@ const createGrapes = () => {
   return grapes;
 };
 
+
 // one set of trees is placed outside the rolling track to create the world
 const addAllWorldsObjects = () => {
-  addWorldObjects(10, 1, 1, addTree);
   addWorldObjects(20, 8, 3, addApple);
   addWorldObjects(5, 6, 3, addBanana);
   addWorldObjects(5, 4, 3, addOrange);
   addWorldObjects(5, 4, 3, addGrapes);
+  addWorldObjects(10, 8, 3, addMushroom);
+  addWorldObjects(10, 1, 1, addMushroom2);
+  addWorldObjects(10, 2, 3, addMushroom3);
+  addWorldObjects(10, 1, 1, addRups);
+  addWorldObjects(10, 8, 3, addTak);
+  addWorldObjects(10, 8, 3, addTak2);
+  addWorldObjects(10, 8, 3, addTak3);
+  addWorldObjects(10, 8, 3, addTak4);
+  addWorldObjects(10, 8, 3, addTak5);
 };
 
-const addTree = (inPath, row, isLeft) => {
-  let newTree;
+
+const addMushroom = (inPath, row, isLeft) => {
+  let newMushroom;
   if (inPath) {
-    if (treesPool.length === 0) return;
-    newTree = treesPool.pop();
-    newTree.visible = true;
-    treesInPath.push(newTree);
-    sphericalHelper.set(worldRadius - 0.3, pathAngleValues[row], - rollingGroundSphere.rotation.x + 4);
+    if (mushroomPool.length === 0) return;
+    newMushroom = mushroomPool.pop();
+    newMushroom.visible = true;
+    mushroomsInPath.push(newMushroom);
+    sphericalHelperMushrooms.set(worldRadius - .3, pathAngleValuesMushrooms[row], - rollingGroundSphere.x + 10);
   } else {
-    newTree = createTree();
+    newMushroom = createMushroom();
     let forestAreaAngle = 0;
 
     if (isLeft) {
-      forestAreaAngle = 1.68 + Math.random() * 0.1;
+      forestAreaAngle = 1.68 + Math.random() * 0.5;
     } else {
-      forestAreaAngle = 1.46 - Math.random() * 0.1;
+      forestAreaAngle = 1.46 - Math.random() * 0.4;
     }
-    sphericalHelper.set(worldRadius - 0.3, forestAreaAngle, row);
+    sphericalHelperMushrooms.set(worldRadius - 0.3, forestAreaAngle, row);
   }
-  newTree.position.setFromSpherical(sphericalHelper);
+  newMushroom.mesh.position.setFromSpherical(sphericalHelperMushrooms);
 
-  //all the trees are added as a child of the rollingGroundSphere so that they also move when we rotate the sphere.
   const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
-  const treeVector = newTree.position.clone().normalize();
-  newTree.quaternion.setFromUnitVectors(treeVector, rollingGroundVector);
-  newTree.rotation.x += (Math.random() * (2 * Math.PI / 10)) + - Math.PI / 10;
+  const mushroomVector = newMushroom.mesh.position.clone().normalize();
+  newMushroom.mesh.quaternion.setFromUnitVectors(mushroomVector, rollingGroundVector);
+  newMushroom.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
 
-  rollingGroundSphere.add(newTree);
-
+  rollingGroundSphere.add(newMushroom.mesh);
 };
+
+const addMushroom2 = (inPath, row, isLeft) => {
+  let newMushroom2;
+  if (inPath) {
+    if (mushroomPool2.length === 0) return;
+    newMushroom2 = mushroomPool2.pop();
+    newMushroom2.visible = true;
+    mushroomsInPath2.push(newMushroom2);
+    sphericalHelperMushrooms2.set(worldRadius - .3, pathAngleValuesMushrooms2[row], - rollingGroundSphere.x + 10);
+  } else {
+    newMushroom2 = createMushroom2();
+    let forestAreaAngle = 0;
+
+    if (isLeft) {
+      forestAreaAngle = 1.68 + Math.random() * 0.5;
+    } else {
+      forestAreaAngle = 1.46 - Math.random() * 0.4;
+    }
+    sphericalHelperMushrooms2.set(worldRadius - 0.3, forestAreaAngle, row);
+  }
+  newMushroom2.mesh.position.setFromSpherical(sphericalHelperMushrooms2);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const mushroomVector = newMushroom2.mesh.position.clone().normalize();
+  newMushroom2.mesh.quaternion.setFromUnitVectors(mushroomVector, rollingGroundVector);
+  newMushroom2.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+
+  rollingGroundSphere.add(newMushroom2.mesh);
+};
+
+const addMushroom3 = (inPath, row, isLeft) => {
+  let newMushroom3;
+  if (inPath) {
+    if (mushroomPool3.length === 0) return;
+    newMushroom3 = mushroomPool3.pop();
+    newMushroom3.visible = true;
+    mushroomsInPath3.push(newMushroom3);
+    sphericalHelperMushrooms3.set(worldRadius - .3, pathAngleValuesMushrooms3[row], - rollingGroundSphere.x + 10);
+  } else {
+    newMushroom3 = createMushroom3();
+    let forestAreaAngle = 0;
+
+    if (isLeft) {
+      forestAreaAngle = 1.68 + Math.random() * 0.5;
+    } else {
+      forestAreaAngle = 1.46 - Math.random() * 0.4;
+    }
+    sphericalHelperMushrooms3.set(worldRadius - 0.3, forestAreaAngle, row);
+  }
+  newMushroom3.mesh.position.setFromSpherical(sphericalHelperMushrooms3);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const mushroomVector = newMushroom3.mesh.position.clone().normalize();
+  newMushroom3.mesh.quaternion.setFromUnitVectors(mushroomVector, rollingGroundVector);
+  newMushroom3.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+
+  rollingGroundSphere.add(newMushroom3.mesh);
+};
+
+const addRups = (inPath, row, isLeft) => {
+  let newRups;
+  if (inPath) {
+    if (rupsPool.length === 0) return;
+    newRups = rupsPool.pop();
+    newRups.visible = true;
+    rupsInPath.push(newRups);
+    sphericalHelperRups.set(worldRadius - .3, pathAngleValuesRups[row], - rollingGroundSphere.x + 10);
+  } else {
+    newRups = createRups();
+    let forestAreaAngle = 0;
+
+    if (isLeft) {
+      forestAreaAngle = 1.68 + Math.random() * 0.5;
+    } else {
+      forestAreaAngle = 1.46 - Math.random() * 0.4;
+    }
+    sphericalHelperRups.set(worldRadius - 0.3, forestAreaAngle, row);
+  }
+  newRups.mesh.position.setFromSpherical(sphericalHelperRups);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const rupsVector = newRups.mesh.position.clone().normalize();
+  newRups.mesh.quaternion.setFromUnitVectors(rupsVector, rollingGroundVector);
+  newRups.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+
+  rollingGroundSphere.add(newRups.mesh);
+};
+
+const addTak = (inPath, row, isLeft) => {
+  let newTak;
+  if (inPath) {
+    if (takPool.length === 0) return;
+    newTak = takPool.pop();
+    newTak.visible = true;
+    takInPath.push(newTak);
+    sphericalHelperTak.set(worldRadius - .3, pathAngleValuesTak[row], - rollingGroundSphere.x + 10);
+  } else {
+    newTak = createTak();
+    let forestAreaAngle = 0;
+
+    if (isLeft) {
+      forestAreaAngle = 1.68 + Math.random() * 0.5;
+    } else {
+      forestAreaAngle = 1.46 - Math.random() * 0.4;
+    }
+    sphericalHelperTak.set(worldRadius - 0.3, forestAreaAngle, row);
+  }
+  newTak.mesh.position.setFromSpherical(sphericalHelperTak);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const takVector = newTak.mesh.position.clone().normalize();
+  newTak.mesh.quaternion.setFromUnitVectors(takVector, rollingGroundVector);
+  newTak.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+
+  rollingGroundSphere.add(newTak.mesh);
+};
+
+const addTak2 = (inPath, row, isLeft) => {
+  let newTak2;
+  if (inPath) {
+    if (takPool2.length === 0) return;
+    newTak2 = takPool2.pop();
+    newTak2.visible = true;
+    takInPath2.push(newTak2);
+    sphericalHelperTak2.set(worldRadius - .3, pathAngleValuesTak2[row], - rollingGroundSphere.x + 10);
+  } else {
+    newTak2 = createTak2();
+    let forestAreaAngle = 0;
+
+    if (isLeft) {
+      forestAreaAngle = 1.68 + Math.random() * 0.5;
+    } else {
+      forestAreaAngle = 1.46 - Math.random() * 0.4;
+    }
+    sphericalHelperTak2.set(worldRadius - 0.3, forestAreaAngle, row);
+  }
+  newTak2.mesh.position.setFromSpherical(sphericalHelperTak2);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const takVector = newTak2.mesh.position.clone().normalize();
+  newTak2.mesh.quaternion.setFromUnitVectors(takVector, rollingGroundVector);
+  newTak2.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+
+  rollingGroundSphere.add(newTak2.mesh);
+};
+
+const addTak3 = (inPath, row, isLeft) => {
+  let newTak3;
+  if (inPath) {
+    if (takPool3.length === 0) return;
+    newTak3 = takPool3.pop();
+    newTak3.visible = true;
+    takInPath3.push(newTak3);
+    sphericalHelperTak3.set(worldRadius - .3, pathAngleValuesTak3[row], - rollingGroundSphere.x + 10);
+  } else {
+    newTak3 = createTak3();
+    let forestAreaAngle = 0;
+
+    if (isLeft) {
+      forestAreaAngle = 1.68 + Math.random() * 0.5;
+    } else {
+      forestAreaAngle = 1.46 - Math.random() * 0.4;
+    }
+    sphericalHelperTak3.set(worldRadius - 0.3, forestAreaAngle, row);
+  }
+  newTak3.mesh.position.setFromSpherical(sphericalHelperTak3);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const takVector = newTak3.mesh.position.clone().normalize();
+  newTak3.mesh.quaternion.setFromUnitVectors(takVector, rollingGroundVector);
+  newTak3.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+
+  rollingGroundSphere.add(newTak3.mesh);
+};
+
+const addTak4 = (inPath, row, isLeft) => {
+  let newTak4;
+  if (inPath) {
+    if (takPool4.length === 0) return;
+    newTak4 = takPool4.pop();
+    newTak4.visible = true;
+    takInPath4.push(newTak4);
+    sphericalHelperTak4.set(worldRadius - .3, pathAngleValuesTak4[row], - rollingGroundSphere.x + 10);
+  } else {
+    newTak4 = createTak4();
+    let forestAreaAngle = 0;
+
+    if (isLeft) {
+      forestAreaAngle = 1.68 + Math.random() * 0.5;
+    } else {
+      forestAreaAngle = 1.46 - Math.random() * 0.4;
+    }
+    sphericalHelperTak4.set(worldRadius - 0.3, forestAreaAngle, row);
+  }
+  newTak4.mesh.position.setFromSpherical(sphericalHelperTak4);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const takVector = newTak4.mesh.position.clone().normalize();
+  newTak4.mesh.quaternion.setFromUnitVectors(takVector, rollingGroundVector);
+  newTak4.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+
+  rollingGroundSphere.add(newTak4.mesh);
+};
+
+const addTak5 = (inPath, row, isLeft) => {
+  let newTak5;
+  if (inPath) {
+    if (takPool5.length === 0) return;
+    newTak5 = takPool5.pop();
+    newTak5.visible = true;
+    takInPath5.push(newTak5);
+    sphericalHelperTak5.set(worldRadius - .3, pathAngleValuesTak5[row], - rollingGroundSphere.x + 10);
+  } else {
+    newTak5 = createTak5();
+    let forestAreaAngle = 0;
+
+    if (isLeft) {
+      forestAreaAngle = 1.68 + Math.random() * 0.5;
+    } else {
+      forestAreaAngle = 1.46 - Math.random() * 0.4;
+    }
+    sphericalHelperTak5.set(worldRadius - 0.3, forestAreaAngle, row);
+  }
+  newTak5.mesh.position.setFromSpherical(sphericalHelperTak5);
+
+  const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
+  const takVector = newTak5.mesh.position.clone().normalize();
+  newTak5.mesh.quaternion.setFromUnitVectors(takVector, rollingGroundVector);
+  newTak5.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+
+  rollingGroundSphere.add(newTak5.mesh);
+};
+
+
 
 const addApple = (inPath, row, isLeft) => {
   addFruits(inPath, row, isLeft, applesPool, applesInPath, sphericalHelperApples, worldRadius, - .4, Math.random() * 1, fruitPathAngleValues, rollingGroundSphere, createApple, .7, Math.random() * 1.5);
@@ -414,32 +722,241 @@ const addGrapes = (inPath, row, isLeft) => {
   addFruits(inPath, row, isLeft, grapesPool, grapesInPath, sphericalHelperGrapes, worldRadius, - .3, Math.random() * 1, fruitPathAngleValues, rollingGroundSphere, createGrapes, .7, Math.random() * 1.5);
 };
 
-//it returns the tree to the pool once it goes out of view
-const doTreeLogic = () => {
-  let oneTree;
-  const treePos = new THREE.Vector3();
-  const treesToRemove = [];
-  treesInPath.forEach(function (element, index) {
-    oneTree = treesInPath[index];
-    treePos.setFromMatrixPosition(oneTree.matrixWorld);
-    if (treePos.z > 6 && oneTree.visible) {
-      treesToRemove.push(oneTree);
-    } else { //check collision
-      if (treePos.distanceTo(fly.mesh.position) <= 0) {
+
+const doMushroomLogic = () => {
+  let oneMushroom;
+  const mushroomPos = new THREE.Vector3();
+  const mushroomsToRemove = [];
+  mushroomsInPath.forEach(function (element, index) {
+    oneMushroom = mushroomsInPath[index];
+    mushroomPos.setFromMatrixPosition(oneMushroom.mesh.matrixWorld);
+    if (mushroomPos.z > 6 && oneMushroom.visible) {
+      mushroomsToRemove.push(oneMushroom);
+    } else {
+      if (mushroomPos.distanceTo(fly.mesh.position) <= 0) {
         console.log(`hit`);
       }
     }
   });
 
   let fromWhere;
-  treesToRemove.forEach(function (element, index) {
-    oneTree = treesToRemove[index];
-    fromWhere = treesInPath.indexOf(oneTree);
-    treesInPath.splice(fromWhere, 1);
-    treesPool.push(oneTree);
-    oneTree.visible = false;
+  mushroomsToRemove.forEach(function (element, index) {
+    oneMushroom = mushroomsToRemove[index];
+    fromWhere = mushroomsInPath.indexOf(oneMushroom);
+    mushroomsInPath.splice(fromWhere, 1);
+    mushroomPool.push(oneMushroom);
+    oneMushroom.visible = false;
   });
 };
+
+const doMushroomLogic2 = () => {
+  let oneMushroom2;
+  const mushroomPos2 = new THREE.Vector3();
+  const mushroomsToRemove2 = [];
+  mushroomsInPath2.forEach(function (element, index) {
+    oneMushroom2 = mushroomsInPath2[index];
+    mushroomPos2.setFromMatrixPosition(oneMushroom2.mesh.matrixWorld);
+    if (mushroomPos2.z > 6 && oneMushroom2.visible) {
+      mushroomsToRemove2.push(oneMushroom2);
+    } else {
+      if (mushroomPos2.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+      }
+    }
+  });
+
+  let fromWhere;
+  mushroomsToRemove2.forEach(function (element, index) {
+    oneMushroom2 = mushroomsToRemove2[index];
+    fromWhere = mushroomsInPath2.indexOf(oneMushroom2);
+    mushroomsInPath2.splice(fromWhere, 1);
+    mushroomPool2.push(oneMushroom2);
+    oneMushroom2.visible = false;
+  });
+};
+
+const doMushroomLogic3 = () => {
+  let oneMushroom3;
+  const mushroomPos3 = new THREE.Vector3();
+  const mushroomsToRemove3 = [];
+  mushroomsInPath3.forEach(function (element, index) {
+    oneMushroom3 = mushroomsInPath3[index];
+    mushroomPos3.setFromMatrixPosition(oneMushroom3.mesh.matrixWorld);
+    if (mushroomPos3.z > 6 && oneMushroom3.visible) {
+      mushroomsToRemove3.push(oneMushroom3);
+    } else {
+      if (mushroomPos3.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+      }
+    }
+  });
+
+  let fromWhere;
+  mushroomsToRemove3.forEach(function (element, index) {
+    oneMushroom3 = mushroomsToRemove3[index];
+    fromWhere = mushroomsInPath3.indexOf(oneMushroom3);
+    mushroomsInPath3.splice(fromWhere, 1);
+    mushroomPool3.push(oneMushroom3);
+    oneMushroom3.visible = false;
+  });
+};
+
+const doRupsLogic = () => {
+  let oneRups;
+  const rupsPos = new THREE.Vector3();
+  const rupsToRemove = [];
+  rupsInPath.forEach(function (element, index) {
+    oneRups = rupsInPath[index];
+    rupsPos.setFromMatrixPosition(oneRups.mesh.matrixWorld);
+    if (rupsPos.z > 6 && oneRups.visible) {
+      rupsToRemove.push(oneRups);
+    } else {
+      if (rupsPos.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+      }
+    }
+  });
+
+  let fromWhere;
+  rupsToRemove.forEach(function (element, index) {
+    oneRups = rupsToRemove[index];
+    fromWhere = rupsInPath.indexOf(oneRups);
+    rupsInPath.splice(fromWhere, 1);
+    rupsInPath.push(oneRups);
+    oneRups.visible = false;
+  });
+};
+
+const doTakLogic = () => {
+  let oneTak;
+  const takPos = new THREE.Vector3();
+  const takToRemove = [];
+  takInPath.forEach(function (element, index) {
+    oneTak = takInPath[index];
+    takPos.setFromMatrixPosition(oneTak.mesh.matrixWorld);
+    if (takPos.z > 6 && oneTak.visible) {
+      takToRemove.push(oneTak);
+    } else {
+      if (takPos.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+      }
+    }
+  });
+
+  let fromWhere;
+  takToRemove.forEach(function (element, index) {
+    oneTak = takToRemove[index];
+    fromWhere = takInPath.indexOf(oneTak);
+    takInPath.splice(fromWhere, 1);
+    takInPath.push(oneTak);
+    oneTak.visible = false;
+  });
+};
+
+const doTakLogic2 = () => {
+  let oneTak2;
+  const takPos2 = new THREE.Vector3();
+  const takToRemove2 = [];
+  takInPath2.forEach(function (element, index) {
+    oneTak2 = takInPath2[index];
+    takPos2.setFromMatrixPosition(oneTak2.mesh.matrixWorld);
+    if (takPos2.z > 6 && oneTak2.visible) {
+      takToRemove2.push(oneTak2);
+    } else {
+      if (takPos2.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+      }
+    }
+  });
+
+  let fromWhere;
+  takToRemove2.forEach(function (element, index) {
+    oneTak2 = takToRemove2[index];
+    fromWhere = takInPath.indexOf(oneTak2);
+    takInPath2.splice(fromWhere, 1);
+    takInPath2.push(oneTak2);
+    oneTak2.visible = false;
+  });
+};
+
+const doTakLogic3 = () => {
+  let oneTak3;
+  const takPos3 = new THREE.Vector3();
+  const takToRemove3 = [];
+  takInPath3.forEach(function (element, index) {
+    oneTak3 = takInPath3[index];
+    takPos3.setFromMatrixPosition(oneTak3.mesh.matrixWorld);
+    if (takPos3.z > 6 && oneTak3.visible) {
+      takToRemove3.push(oneTak3);
+    } else {
+      if (takPos3.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+      }
+    }
+  });
+
+  let fromWhere;
+  takToRemove3.forEach(function (element, index) {
+    oneTak3 = takToRemove3[index];
+    fromWhere = takInPath.indexOf(oneTak3);
+    takInPath3.splice(fromWhere, 1);
+    takInPath3.push(oneTak3);
+    oneTak3.visible = false;
+  });
+};
+
+const doTakLogic4 = () => {
+  let oneTak4;
+  const takPos4 = new THREE.Vector3();
+  const takToRemove4 = [];
+  takInPath4.forEach(function (element, index) {
+    oneTak4 = takInPath4[index];
+    takPos4.setFromMatrixPosition(oneTak4.mesh.matrixWorld);
+    if (takPos4.z > 6 && oneTak4.visible) {
+      takToRemove4.push(oneTak4);
+    } else {
+      if (takPos4.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+      }
+    }
+  });
+
+  let fromWhere;
+  takToRemove4.forEach(function (element, index) {
+    oneTak4 = takToRemove4[index];
+    fromWhere = takInPath.indexOf(oneTak4);
+    takInPath4.splice(fromWhere, 1);
+    takInPath4.push(oneTak4);
+    oneTak4.visible = false;
+  });
+};
+
+const doTakLogic5 = () => {
+  let oneTak5;
+  const takPos5 = new THREE.Vector3();
+  const takToRemove5 = [];
+  takInPath5.forEach(function (element, index) {
+    oneTak5 = takInPath5[index];
+    takPos5.setFromMatrixPosition(oneTak5.mesh.matrixWorld);
+    if (takPos5.z > 6 && oneTak5.visible) {
+      takToRemove5.push(oneTak5);
+    } else {
+      if (takPos5.distanceTo(fly.mesh.position) <= 0) {
+        console.log(`hit`);
+      }
+    }
+  });
+
+  let fromWhere;
+  takToRemove5.forEach(function (element, index) {
+    oneTak5 = takToRemove5[index];
+    fromWhere = takInPath.indexOf(oneTak5);
+    takInPath5.splice(fromWhere, 1);
+    takInPath5.push(oneTak5);
+    oneTak5.visible = false;
+  });
+};
+
 
 const music = () => {
   pingPong = new Tone.PingPongDelay(`4n`, 0.2).toMaster();
@@ -458,7 +975,7 @@ const music = () => {
         attack: 0.001,
         decay: 0.1,
         sustain: 0.1,
-        release: 0.8
+        release: 1.4
       }
     }
   ).connect(pingPong).chain(volume, distortion, Tone.Master);
@@ -495,18 +1012,6 @@ const doLogic = (objectsInPath, toon) => {
   }
 };
 
-//this method is called from update when enought time has elapsed after planting the last tree
-const addPathTree = () => {
-  const options = [0, 1];
-  let lane = Math.floor(Math.random() * 2);
-  addTree(true, lane); // calling the addtree method with a different set of parameters where te tree gets placed in the selected path
-  options.splice(lane, 1);
-  if (Math.random() > 0.5) {
-    lane = Math.floor(Math.random() * 2);
-    addTree(true, options[lane]);
-  }
-};
-
 const addPathApple = () => {
   addPath(addApple);
 };
@@ -523,6 +1028,41 @@ const addPathGrapes = () => {
   addPath(addGrapes);
 };
 
+const addPathMushrooms = () => {
+  addPath(addMushroom);
+};
+
+const addPathMushrooms2 = () => {
+  addPath(addMushroom2);
+};
+
+const addPathMushrooms3 = () => {
+  addPath(addMushroom3);
+};
+
+const addPathRups = () => {
+  addPath(addRups);
+};
+
+const addPathTak = () => {
+  addPath(addTak);
+};
+
+const addPathTak2 = () => {
+  addPath(addTak2);
+};
+
+const addPathTak3 = () => {
+  addPath(addTak3);
+};
+
+const addPathTak4 = () => {
+  addPath(addTak4);
+};
+
+const addPathTak5 = () => {
+  addPath(addTak5);
+};
 
 const onWindowResize = () => {
 	//resize & align
@@ -674,10 +1214,11 @@ const update = () => {
     }
 
   //logica tijd/clock / releaseinterval
-    if (clock.getElapsedTime() > .5) {
+    if (clock.getElapsedTime() > .3) {
       const random = 1 + Math.floor(Math.random() * 4);
       if (random === 1 || random === 4) {
         addPathApple();
+
       }
       if (random === 2 || random === 4) {
         addPathBanana();
@@ -688,16 +1229,33 @@ const update = () => {
       if (random === 4 || random === 3) {
         addPathGrapes();
       }
-      addPathTree();
+      addPathMushrooms();
+      addPathMushrooms2();
+      addPathMushrooms3();
+      addPathRups();
+      addPathTak();
+      addPathTak2();
+      addPathTak3();
+      addPathTak4();
+      addPathTak5();
       clock.start();
     }
 
   //bomen en fruit
-    doTreeLogic();
+    doMushroomLogic();
+    doMushroomLogic2();
+    doMushroomLogic3();
+    doRupsLogic();
+    doTakLogic();
+    doTakLogic2();
+    doTakLogic3();
+    doTakLogic4();
+    doTakLogic5();
     doLogic(applesInPath, toonApple);
     doLogic(grapesInPath, toonGrapes);
     doLogic(orangesInPath, toonOrange);
     doLogic(bananasInPath, toonBanana);
+
 
     if (game.fly === `flying`) {
       updateFly();
