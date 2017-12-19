@@ -10,6 +10,6 @@ export default class Tak5 {
     shape1.position.set(0, 0, 0);
     this.mesh.add(shape1);
 
-    this.mesh.rotation.set(Math.PI, Math.PI, Math.PI / 2);
+    this.mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
   }
 }

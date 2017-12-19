@@ -30,6 +30,6 @@ export default class Tak3 {
     shape4.rotation.x = Math.PI / 3;
     this.mesh.add(shape4);
 
-    this.mesh.rotation.set(Math.PI, Math.PI, Math.PI / 2);
+    this.mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
   }
 }

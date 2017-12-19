@@ -74,11 +74,10 @@ let applesPool, applesInPath, bananasPool, bananasInPath, orangesPool, orangesIn
 let sphericalHelperApples, sphericalHelperBananas, sphericalHelperOranges, sphericalHelperGrapes;
 
 
-let clock, clockMusic, time;
+let clock, time;
 
 //music
-let polySynth, distortion, volume, pingPong;
-let totalMusic;
+let polySynth, distortion, volume, pingPong, notes;
 const toonApple = `C4`;
 const toonBanana = `F3`;
 const toonOrange = `D3`;
@@ -140,7 +139,8 @@ const empty = elem => {
 
 const createScene = () => {
 
-  totalMusic = [];
+  notes = [];
+  Tone.Transport.stop();
 
   //mushrooms
   mushroomPool = [];
@@ -219,7 +219,6 @@ const createScene = () => {
   //clock starten
   time = new THREE.Clock();
   clock = new THREE.Clock();
-  clockMusic = new THREE.Clock();
 
   sceneWidth = window.innerWidth;
   sceneHeight = window.innerHeight;
@@ -467,7 +466,7 @@ const addMushroom = (inPath, row, isLeft) => {
   const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
   const mushroomVector = newMushroom.mesh.position.clone().normalize();
   newMushroom.mesh.quaternion.setFromUnitVectors(mushroomVector, rollingGroundVector);
-  newMushroom.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+  newMushroom.mesh.rotation.x = (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
 
   rollingGroundSphere.add(newMushroom.mesh);
 };
@@ -583,7 +582,7 @@ const addTak = (inPath, row, isLeft) => {
   const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
   const takVector = newTak.mesh.position.clone().normalize();
   newTak.mesh.quaternion.setFromUnitVectors(takVector, rollingGroundVector);
-  newTak.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+  // newTak.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
 
   rollingGroundSphere.add(newTak.mesh);
 };
@@ -612,7 +611,7 @@ const addTak2 = (inPath, row, isLeft) => {
   const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
   const takVector = newTak2.mesh.position.clone().normalize();
   newTak2.mesh.quaternion.setFromUnitVectors(takVector, rollingGroundVector);
-  newTak2.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+  // newTak2.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
 
   rollingGroundSphere.add(newTak2.mesh);
 };
@@ -641,7 +640,7 @@ const addTak3 = (inPath, row, isLeft) => {
   const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
   const takVector = newTak3.mesh.position.clone().normalize();
   newTak3.mesh.quaternion.setFromUnitVectors(takVector, rollingGroundVector);
-  newTak3.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+  // newTak3.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
 
   rollingGroundSphere.add(newTak3.mesh);
 };
@@ -670,7 +669,7 @@ const addTak4 = (inPath, row, isLeft) => {
   const rollingGroundVector = rollingGroundSphere.position.clone().normalize();
   const takVector = newTak4.mesh.position.clone().normalize();
   newTak4.mesh.quaternion.setFromUnitVectors(takVector, rollingGroundVector);
-  newTak4.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
+  // newTak4.mesh.rotation.x += (Math.random() * (2 * Math.PI / 20)) + - Math.PI / 20;
 
   rollingGroundSphere.add(newTak4.mesh);
 };
@@ -983,17 +982,12 @@ const music = () => {
 
 
 const playMusic = (object, toon) => {
-  pingPong.delayTime.value = fly.mesh.position.y / 10 * .5;
+  pingPong.delayTime.value = fly.mesh.position.y / 10 * 3;
   volume.volume.value = object.mesh.scale.x * 500;
   distortion.distortion = 1 + fly.mesh.position.x;
-  polySynth.triggerAttackRelease(toon, `4n`);
-  //const clock = (Math.round(time.getElapsedTime() * 10) / 10);
-  const clock = Math.round((time.getElapsedTime() - 4) * 10) / 10;
-  const currentDistortion = distortion.distortion;
-  const currentVolume = volume.volume.value;
-  const currentPingPong = pingPong.delayTime.value;
-  const detail = {toon, clock, currentDistortion, currentVolume, currentPingPong};
-  totalMusic.push(detail);
+  polySynth.triggerAttackRelease(toon, `8n`);
+  const clock = time.getElapsedTime();
+  notes.push({time: clock, note: toon, distortion: distortion.distortion, volume: volume.volume.value, pingPong: pingPong.delayTime.value});
 };
 
 let currentObject, currentToon;
@@ -1133,6 +1127,17 @@ const handleReplayClicked = () => {
   startInterval = setInterval(updateCounter, 1000);
 };
 
+const handlePlaySong = () => {
+  Tone.Transport.bpm.rampTo(180, 10);
+  Tone.Transport.start();
+  new Tone.Part((time, value) => {
+    distortion.distortion = value.distortion;
+    volume.volume.value = value.volume;
+    pingPong.delayTime.value = value.pingPong;
+    polySynth.triggerAttackRelease(value.note, `8n`, time);
+  }, notes).start();
+};
+
 const endGame = () => {
   document.querySelector(`.counter`).innerHTML = ``;
   hidePlay();
@@ -1151,34 +1156,6 @@ const updateCounter = () => {
     time.stop();
     endGame();
   }
-};
-
-const handlePlaySong = () => {
-  if (totalMusic.length > 0) {
-    clockMusic.start();
-    if (game.music === `music`) {
-      endMusic();
-    }
-  }
-};
-
-const endMusic = () => {
-  const currentTime = (Math.round(clockMusic.getElapsedTime() * 10) / 10);
-  totalMusic.forEach((sound, index) => {
-    if (currentTime === sound.clock) {
-      console.log(sound.clock);
-      distortion.distortion = sound.currentDistortion;
-      volume.volume.value = sound.currentVolume;
-      pingPong.delayTime.value = sound.currentPingPong;
-      polySynth.triggerAttackRelease(sound.toon, `8n`);
-      totalMusic.splice(index, 1);
-    }
-  });
-  if (totalMusic.length === 0) {
-    clockMusic.stop();
-    cancelAnimationFrame(endMusic);
-  }
-  requestAnimationFrame(endMusic);
 };
 
 const hidePlay = () => {
@@ -1218,7 +1195,6 @@ const update = () => {
       const random = 1 + Math.floor(Math.random() * 4);
       if (random === 1 || random === 4) {
         addPathApple();
-
       }
       if (random === 2 || random === 4) {
         addPathBanana();
