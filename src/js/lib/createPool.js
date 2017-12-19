@@ -1,5 +1,5 @@
-export default (createObject, pool) => {
-  const maxInPool = 50;
+export default (createObject, pool, max) => {
+  const maxInPool = max;
   let newObject;
   for (let i = 0;i < maxInPool;i ++) {
     newObject = createObject();

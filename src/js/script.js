@@ -74,7 +74,7 @@ let applesPool, applesInPath, bananasPool, bananasInPath, orangesPool, orangesIn
 let sphericalHelperApples, sphericalHelperBananas, sphericalHelperOranges, sphericalHelperGrapes;
 
 
-let clock, time;
+let clock, time, mushclock;
 
 //music
 let polySynth, distortion, volume, pingPong, notes;
@@ -219,6 +219,7 @@ const createScene = () => {
   //clock starten
   time = new THREE.Clock();
   clock = new THREE.Clock();
+  mushclock = new THREE.Clock();
 
   sceneWidth = window.innerWidth;
   sceneHeight = window.innerHeight;
@@ -326,19 +327,19 @@ const addLight = () => {
 
 // extra objecten buiten diegene die worden aangemaak in addWorldTrees voor het begin
 const createPools = () => {
-  createPool(createApple, applesPool);
-  createPool(createBanana, bananasPool);
-  createPool(createOrange, orangesPool);
-  createPool(createGrapes, grapesPool);
-  createPool(createMushroom, mushroomPool);
-  createPool(createMushroom2, mushroomPool2);
-  createPool(createMushroom3, mushroomPool3);
-  createPool(createRups, rupsPool);
-  createPool(createTak, takPool);
-  createPool(createTak2, takPool2);
-  createPool(createTak3, takPool3);
-  createPool(createTak4, takPool4);
-  createPool(createTak5, takPool5);
+  createPool(createApple, applesPool, 50);
+  createPool(createBanana, bananasPool, 50);
+  createPool(createOrange, orangesPool, 50);
+  createPool(createGrapes, grapesPool, 50);
+  createPool(createMushroom, mushroomPool, 20);
+  createPool(createMushroom2, mushroomPool2, 20);
+  createPool(createMushroom3, mushroomPool3, 20);
+  createPool(createRups, rupsPool, 10);
+  createPool(createTak, takPool, 10);
+  createPool(createTak2, takPool2, 20);
+  createPool(createTak3, takPool3, 10);
+  createPool(createTak4, takPool4, 10);
+  createPool(createTak5, takPool5, 20);
 };
 
 const createMushroom = () => {
@@ -1205,6 +1206,19 @@ const update = () => {
       if (random === 4 || random === 3) {
         addPathGrapes();
       }
+      // addPathMushrooms();
+      // addPathMushrooms2();
+      // addPathMushrooms3();
+      // addPathRups();
+      // addPathTak();
+      // addPathTak2();
+      // addPathTak3();
+      // addPathTak4();
+      // addPathTak5();
+      clock.start();
+    }
+
+    if (mushclock.getElapsedTime() > .5) {
       addPathMushrooms();
       addPathMushrooms2();
       addPathMushrooms3();
@@ -1214,7 +1228,7 @@ const update = () => {
       addPathTak3();
       addPathTak4();
       addPathTak5();
-      clock.start();
+      mushclock.start();
     }
 
   //bomen en fruit
