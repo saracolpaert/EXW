@@ -164,7 +164,7 @@ const createScene = () => {
   rupsPool = [];
   rupsInPath = [];
   sphericalHelperRups = new THREE.Spherical();
-  pathAngleValuesRups = [];
+  pathAngleValuesRups = [1.52, 1.53, 1.54, 1.55, 1.56, 1.57, 1.58, 1.59, 1.60, 1.61, 1.62];
 
   //takken
   takPool = [];
@@ -334,11 +334,11 @@ const createPools = () => {
   createPool(createMushroom, mushroomPool, 20);
   createPool(createMushroom2, mushroomPool2, 20);
   createPool(createMushroom3, mushroomPool3, 20);
-  createPool(createRups, rupsPool, 10);
+  createPool(createRups, rupsPool, 6);
   createPool(createTak, takPool, 7);
-  createPool(createTak2, takPool2, 5);
+  createPool(createTak2, takPool2, 6);
   createPool(createTak3, takPool3, 5);
-  createPool(createTak4, takPool4, 5);
+  createPool(createTak4, takPool4, 4);
   createPool(createTak5, takPool5, 5);
 };
 
@@ -434,7 +434,7 @@ const addAllWorldsObjects = () => {
   addWorldObjects(10, 8, 3, addMushroom);
   addWorldObjects(5, 7, 1, addMushroom2);
   addWorldObjects(6, 4, 3, addMushroom3);
-  addWorldObjects(0, 0, 0, addRups);
+  addWorldObjects(5, 4, 2, addRups);
   addWorldObjects(8, 5, 2, addTak);
   addWorldObjects(5, 4, 2, addTak2);
   addWorldObjects(4, 5, 3, addTak3);
@@ -1222,7 +1222,7 @@ const update = () => {
     }
 
     if (mushclock.getElapsedTime() > .5) {
-      const random = 1 + Math.floor(Math.random() * 8);
+      const random = 1 + Math.floor(Math.random() * 9);
       if (random === 1 || random === 4) {
         addPathMushrooms();
       }
@@ -1247,7 +1247,9 @@ const update = () => {
       if (random === 8 || random === 2) {
         addPathTak5();
       }
-      addPathRups();
+      if (random === 9 || random === 4) {
+        addPathRups();
+      }
       mushclock.start();
     }
 
